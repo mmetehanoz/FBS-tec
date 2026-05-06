@@ -24,66 +24,73 @@ import { AdminSmsPage } from "./pages/admin/AdminSmsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
-const router = createBrowserRouter([
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <CustomerLayout />,
+      children: [
+        { index: true, element: <HomePage /> },
+        { path: "hakkimizda", element: <AboutPage /> },
+        { path: "iletisim", element: <ContactPage /> },
+        { path: "bayilikler", element: <PartnershipsPage /> },
+        { path: "yeterlilikler", element: <QualificationsPage /> },
+        { path: "giris", element: <LoginPage /> },
+        { path: "servis-talebi", element: <ServiceRequestPage /> },
+        {
+          path: "servis-takip",
+          element: (
+            <ProtectedRoute>
+              <ServiceTrackPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "servis/:serviceId",
+          element: (
+            <ProtectedRoute>
+              <ServiceDetailPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "mesajlar",
+          element: (
+            <ProtectedRoute>
+              <MessagesPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "hesabim",
+          element: (
+            <ProtectedRoute>
+              <AccountPage />
+            </ProtectedRoute>
+          ),
+        },
+      ],
+    },
+    {
+      path: "/admin",
+      element: <AdminLayout />,
+      children: [
+        { index: true, element: <AdminDashboardPage /> },
+        { path: "servis-talepleri", element: <AdminRequestsPage /> },
+        { path: "servis/:serviceId", element: <AdminServiceDetailPage /> },
+        { path: "musteriler", element: <AdminCustomersPage /> },
+        { path: "mesajlar", element: <AdminMessagesPage /> },
+        { path: "sms", element: <AdminSmsPage /> },
+      ],
+    },
+    { path: "*", element: <NotFoundPage /> },
+  ],
   {
-    path: "/",
-    element: <CustomerLayout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: "hakkimizda", element: <AboutPage /> },
-      { path: "iletisim", element: <ContactPage /> },
-      { path: "bayilikler", element: <PartnershipsPage /> },
-      { path: "yeterlilikler", element: <QualificationsPage /> },
-      { path: "giris", element: <LoginPage /> },
-      { path: "servis-talebi", element: <ServiceRequestPage /> },
-      {
-        path: "servis-takip",
-        element: (
-          <ProtectedRoute>
-            <ServiceTrackPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "servis/:serviceId",
-        element: (
-          <ProtectedRoute>
-            <ServiceDetailPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "mesajlar",
-        element: (
-          <ProtectedRoute>
-            <MessagesPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "hesabim",
-        element: (
-          <ProtectedRoute>
-            <AccountPage />
-          </ProtectedRoute>
-        ),
-      },
-    ],
+    basename: routerBasename || "/",
   },
-  {
-    path: "/admin",
-    element: <AdminLayout />,
-    children: [
-      { index: true, element: <AdminDashboardPage /> },
-      { path: "servis-talepleri", element: <AdminRequestsPage /> },
-      { path: "servis/:serviceId", element: <AdminServiceDetailPage /> },
-      { path: "musteriler", element: <AdminCustomersPage /> },
-      { path: "mesajlar", element: <AdminMessagesPage /> },
-      { path: "sms", element: <AdminSmsPage /> },
-    ],
-  },
-  { path: "*", element: <NotFoundPage /> },
-]);
+);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
