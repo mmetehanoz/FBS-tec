@@ -23,7 +23,7 @@ export function LoginPage() {
 
   const isRegister = mode === "register";
   const canContinue = isRegister
-    ? name.trim().length > 2 && isValidTurkishMobile(phone) && email.includes("@")
+    ? name.trim().length > 2 && isValidTurkishMobile(phone) && (!email.trim() || email.includes("@"))
     : isValidTurkishMobile(phone);
 
   const resetMode = (nextMode: AuthMode) => {
@@ -35,7 +35,7 @@ export function LoginPage() {
   const verify = () => {
     const normalizedPhone = normalizePhone(phone);
     if (isRegister) {
-      registerCustomer({ name, phone: normalizedPhone, email });
+      registerCustomer({ name, phone: normalizedPhone, email: email.trim() });
     } else {
       login({ phone: normalizedPhone });
     }
@@ -112,7 +112,7 @@ export function LoginPage() {
                 />
               </Field>
               {isRegister ? (
-                <Field label="E-posta">
+                <Field label="E-posta (isteğe bağlı)">
                   <Input
                     inputMode="email"
                     placeholder="ornek@mail.com"

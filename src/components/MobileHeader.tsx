@@ -1,4 +1,4 @@
-import { Building2, PhoneCall } from "lucide-react";
+import { PhoneCall } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function MobileHeader() {
@@ -6,11 +6,12 @@ export function MobileHeader() {
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-5 py-3 backdrop-blur md:hidden">
       <div className="flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-brand-700 text-white">
-            <Building2 size={21} />
-          </div>
+          <img
+            src="/FBS-TEK-LOGO.png"
+            alt="FBS Fırat Bilgisayar Sistemleri"
+            className="h-10 w-auto object-contain"
+          />
           <div>
-            <p className="text-base font-black leading-none text-slate-950">FBS</p>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-brand-700">
               Fırat Bilgisayar Sistemleri
             </p>

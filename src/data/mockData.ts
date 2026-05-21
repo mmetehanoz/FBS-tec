@@ -36,8 +36,8 @@ export const services = [
     icon: MonitorCog,
   },
   {
-    title: "Yerinde servis",
-    description: "Uygun taleplerde Elazığ içinde adresinizde teknik destek.",
+    title: "Adresten Teslim",
+    description: "Uygun taleplerde Elazığ içinde ürününüzü adresinizden teslim alma planı.",
     icon: Home,
   },
   {

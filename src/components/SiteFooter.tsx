@@ -5,9 +5,14 @@ export function SiteFooter() {
     <footer className="hidden border-t border-slate-200 bg-white md:block">
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <div>
-          <h2 className="text-xl font-black text-slate-950">FBS Fırat Bilgisayar Sistemleri</h2>
+          <img
+            src="/FBS-TEK-LOGO.png"
+            alt="FBS Fırat Bilgisayar Sistemleri"
+            className="h-14 w-auto object-contain"
+          />
+          <h2 className="mt-4 text-xl font-black text-slate-950">FBS Fırat Bilgisayar Sistemleri</h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
-            1998’den beri Elazığ’da bilgisayar, notebook, yazıcı, yazılım,
+            1997’den beri Elazığ’da bilgisayar, notebook, yazıcı, yazılım,
             ağ ve kurumsal bakım alanlarında takip edilebilir teknik servis hizmeti sunar.
           </p>
         </div>

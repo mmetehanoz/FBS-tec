@@ -3,9 +3,9 @@ import type { LucideIcon } from "lucide-react";
 import { Card } from "../components/ui";
 
 const milestones = [
-  ["1998", "Elazığ’da bilgisayar satış ve teknik servis hizmetleriyle faaliyet başladı."],
+  ["1997", "Elazığ’da bilgisayar satış ve teknik servis hizmetleriyle faaliyet başladı."],
   ["2000’ler", "Bilgisayar bakım, yazılım kurulum ve donanım onarım süreçleri genişledi."],
-  ["2010’lar", "Yazıcı, ağ, yerinde servis ve kurumsal bakım operasyonları eklendi."],
+  ["2010’lar", "Yazıcı, ağ, adresten teslim ve kurumsal bakım operasyonları eklendi."],
   ["Bugün", "Takip numaralı, fiyat onaylı ve müşteri panelinden izlenebilir servis deneyimi sunuluyor."],
 ];
 
@@ -27,7 +27,7 @@ const values: Array<{ title: string; text: string; icon: LucideIcon }> = [
   },
   {
     title: "Süreklilik",
-    text: "1998’den bugüne aynı bölgede teknoloji hizmeti.",
+    text: "1997’den bugüne aynı bölgede teknoloji hizmeti.",
     icon: Clock3,
   },
 ];
@@ -42,8 +42,8 @@ export function AboutPage() {
             Elazığ’da güvenilir, takip edilebilir ve ulaşılabilir teknik servis.
           </h1>
           <p className="mt-4 text-sm leading-7 text-slate-200 md:text-base">
-            FBS Fırat Bilgisayar Sistemleri, 1998’den beri bilgisayar, yazılım,
-            yazıcı, ağ, yerinde servis ve kurumsal bakım ihtiyaçlarını tek servis
+            FBS Fırat Bilgisayar Sistemleri, 1997’den beri bilgisayar, yazılım,
+            yazıcı, ağ, adresten teslim ve kurumsal bakım ihtiyaçlarını tek servis
             süreci içinde karşılar.
           </p>
         </div>

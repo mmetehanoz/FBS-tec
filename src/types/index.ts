@@ -15,7 +15,7 @@ export type ServiceStatus =
 export type Urgency = "Normal" | "Acil" | "Kritik";
 
 export type ServicePreference =
-  | "Mümkünse Yerinde Servis İstiyorum"
+  | "Adresten Teslim"
   | "Ürün adresten alınsın"
   | "Kendim servise bırakacağım";
 

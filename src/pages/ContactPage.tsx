@@ -74,7 +74,7 @@ export function ContactPage() {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-600">İletişim</p>
           <h1 className="mt-3 text-3xl font-black leading-tight text-slate-950 md:text-5xl">
-            Teknik servis, yerinde destek ve servis takibi için FBS’ye ulaşın.
+            Teknik servis, adresten teslim ve servis takibi için FBS’ye ulaşın.
           </h1>
           <p className="mt-4 text-sm leading-7 text-slate-600 md:text-base">
             Bilgisayar, notebook, yazıcı, yazılım, ağ veya kurumsal bakım talepleriniz

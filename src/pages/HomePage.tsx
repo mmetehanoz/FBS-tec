@@ -23,7 +23,7 @@ import { services } from "../data/mockData";
 import { Card } from "../components/ui";
 
 const highlights = [
-  { value: "1998", label: "Elazığ’da servis deneyimi" },
+  { value: "1997", label: "Elazığ’da servis deneyimi" },
   { value: "10", label: "adımlı takip süreci" },
   { value: "SMS", label: "müşteri bilgilendirme" },
   { value: "A-Z", label: "teslimata kadar servis" },
@@ -82,7 +82,7 @@ const tickerItems = [
   "Yazıcı arıza servisi",
   "Windows kurulum",
   "Ağ ve yazıcı desteği",
-  "Yerinde servis",
+  "Adresten Teslim",
   "Servis takip paneli",
 ];
 
@@ -98,8 +98,8 @@ const quickBenefits: Array<{ title: string; text: string; icon: LucideIcon }> = 
     icon: CheckCircle2,
   },
   {
-    title: "Yerinde destek",
-    text: "Uygun taleplerde adresinizde servis planlanır.",
+    title: "Adresten Teslim",
+    text: "Ürün adresinizden teslim alınarak servis süreci başlatılır.",
     icon: Home,
   },
 ];
@@ -129,7 +129,7 @@ export function HomePage() {
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2 md:max-w-2xl">
             <Link
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-[0.98]"
+              className="heartbeat-cta inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-[0.98]"
               to="/servis-talebi"
             >
               <ClipboardCheck size={19} />
@@ -329,9 +329,9 @@ export function HomePage() {
           <div className="grid h-12 w-12 place-items-center rounded-lg bg-brand-50 text-brand-700">
             <HardDrive size={25} />
           </div>
-          <h2 className="mt-4 text-2xl font-black text-slate-950">Servise bırak, adresten aldır veya yerinde destek iste.</h2>
+          <h2 className="mt-4 text-2xl font-black text-slate-950">Servise bırak veya adresten teslim seçeneğiyle süreci başlat.</h2>
           <p className="mt-3 text-sm leading-7 text-slate-600">
-            Talep formunda servis tercihinizi seçin. Uygun durumlarda yerinde servis planlanır,
+            Talep formunda servis tercihinizi seçin. Uygun durumlarda adresten teslim planlanır,
             ürün adresten alınır veya müşteri ürünü doğrudan FBS servisine bırakır.
           </p>
           <div className="mt-5 grid gap-3">
@@ -361,7 +361,7 @@ export function HomePage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2 md:w-72 md:grid-cols-1">
             <Link
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-black text-brand-700 transition hover:bg-brand-50"
+              className="heartbeat-cta inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-black text-brand-700 transition hover:bg-brand-50"
               to="/servis-talebi"
             >
               <ClipboardCheck size={18} />

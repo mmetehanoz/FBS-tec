@@ -1,4 +1,4 @@
-import { Building2, Menu, PhoneCall, ShieldCheck } from "lucide-react";
+import { Menu, PhoneCall, ShieldCheck } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
 import { cn } from "../utils/cn";
 
@@ -8,7 +8,6 @@ const navItems = [
   { label: "Servis Süreci", path: "/yeterlilikler" },
   { label: "Servis Talep", path: "/servis-talebi" },
   { label: "Servis Takip", path: "/servis-takip" },
-  { label: "İletişim", path: "/iletisim" },
 ];
 
 export function DesktopHeader() {
@@ -16,11 +15,12 @@ export function DesktopHeader() {
     <header className="sticky top-0 z-30 hidden border-b border-slate-200 bg-white/92 shadow-sm backdrop-blur md:block">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link to="/" className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand-700 text-white">
-            <Building2 size={23} />
-          </div>
+          <img
+            src="/FBS-TEK-LOGO.png"
+            alt="FBS Fırat Bilgisayar Sistemleri"
+            className="h-12 w-auto object-contain"
+          />
           <div>
-            <p className="text-lg font-black leading-none text-slate-950">FBS</p>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">
               Fırat Bilgisayar Sistemleri
             </p>

@@ -11,7 +11,6 @@ import type { Customer, ServiceRecord } from "../types";
 import { formatTurkishMobileInput, isValidTurkishMobile, normalizePhone, phonePrefix } from "../utils/phone";
 import { generateTrackingNo } from "../utils/service";
 
-const onsitePreference = "Mümkünse Yerinde Servis İstiyorum";
 const pickupPreference = "Ürün adresten alınsın";
 const dropOffPreference = "Kendim servise bırakacağım";
 
@@ -22,10 +21,9 @@ const schema = z.object({
     .string()
     .optional()
     .refine((value) => !value || value.includes("@"), "Geçerli bir e-posta yazın"),
-  product: z.string().min(2, "Ürün bilgisi gerekli"),
+  product: z.string().optional(),
   description: z.string().optional(),
   preference: z.enum([
-    onsitePreference,
     pickupPreference,
     dropOffPreference,
   ]),
@@ -46,8 +44,8 @@ const legalContent = {
   terms: {
     title: "Servis İşlem Koşulları",
     body: [
-      "Servis talebi oluşturulduktan sonra cihaz veya yerinde servis ihtiyacı ön incelemeye alınır. Arıza tespiti sonrası ücretli işlem gerekiyorsa müşteriden onay alınmadan onarım başlatılmaz.",
-      "Yerinde servis, ürün adresten alma ve servise bırakma tercihleri randevu uygunluğuna göre planlanır. Belirtilen tarih ve saat aralığı ön talep niteliğindedir.",
+      "Servis talebi oluşturulduktan sonra cihaz veya adresten teslim ihtiyacı ön incelemeye alınır. Arıza tespiti sonrası ücretli işlem gerekiyorsa müşteriden onay alınmadan onarım başlatılmaz.",
+      "Adresten teslim, ürün adresten alma ve servise bırakma tercihleri randevu uygunluğuna göre planlanır. Belirtilen tarih ve saat aralığı ön talep niteliğindedir.",
       "Servis süreci boyunca müşteriye görünür notlar, fiyat teklifleri ve durum güncellemeleri müşteri panelinden takip edilebilir.",
     ],
   },
@@ -86,6 +84,7 @@ export function ServiceRequestPage() {
       dateStyle: "medium",
       timeStyle: "short",
     });
+    const product = data.product?.trim() || "Telefonla tamamlanacak";
     const description = data.description?.trim()
       || "Müşteri açıklama eklemedi. Teknik servis ekibi telefonla detay alacak.";
     const email = data.email?.trim();
@@ -107,12 +106,12 @@ export function ServiceRequestPage() {
       contactName: createdCustomer.name,
       contactPhone: createdCustomer.phone,
       contactEmail: createdCustomer.email || contactEmail,
-      productCategory: data.product,
+      productCategory: product,
       brand: "Telefonla tamamlanacak",
-      model: data.product,
+      model: product,
       serialNo: "Telefonla tamamlanacak",
       warranty: "Telefonla netleştirilecek",
-      issueTitle: `${data.product} servis talebi`,
+      issueTitle: `${product} servis talebi`,
       description,
       urgency: "Normal",
       preference: data.preference,
@@ -208,7 +207,7 @@ export function ServiceRequestPage() {
             </Field>
           </div>
 
-          <Field label="Ürün" error={errors.product?.message}>
+          <Field label="Ürün (isteğe bağlı)" error={errors.product?.message}>
             <Input placeholder="Notebook, masaüstü PC, yazıcı, monitör..." {...register("product")} />
           </Field>
 
@@ -225,7 +224,6 @@ export function ServiceRequestPage() {
           <Field label="Servis tercihi" error={errors.preference?.message}>
             <div className="space-y-2">
               {([
-                onsitePreference,
                 pickupPreference,
                 dropOffPreference,
               ] as const).map((preference) => (

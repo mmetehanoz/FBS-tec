@@ -406,7 +406,7 @@ export function AdminServiceDetailPage() {
                   value={callCenterForm.preference}
                   onChange={(event) => updateCallCenterField("preference", event.target.value as ServicePreference)}
                 >
-                  <option>Mümkünse Yerinde Servis İstiyorum</option>
+                  <option>Adresten Teslim</option>
                   <option>Ürün adresten alınsın</option>
                   <option>Kendim servise bırakacağım</option>
                 </select>
@@ -421,7 +421,7 @@ export function AdminServiceDetailPage() {
             </div>
             <Field label="Adres">
               <Textarea
-                placeholder="Yerinde servis veya adresten alım için açık adres"
+                  placeholder="Adresten teslim veya adresten alım için açık adres"
                 value={callCenterForm.address}
                 onChange={(event) => updateCallCenterField("address", event.target.value)}
               />
