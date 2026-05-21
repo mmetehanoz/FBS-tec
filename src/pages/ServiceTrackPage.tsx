@@ -2,11 +2,21 @@ import { useEffect } from "react";
 import { PageHeader } from "../components/PageHeader";
 import { ServiceCard } from "../components/ServiceCard";
 import { usePortalStore } from "../hooks/usePortalStore";
+import { normalizePhone } from "../utils/phone";
 
 export function ServiceTrackPage() {
   const services = usePortalStore((state) => state.services);
+  const customer = usePortalStore((state) => state.customer);
   const loadServices = usePortalStore((state) => state.loadServices);
   const serviceApiStatus = usePortalStore((state) => state.serviceApiStatus);
+  const customerPhone = normalizePhone(customer.phone);
+  const customerServices = services.filter((service) => {
+    if (service.contactPhone) {
+      return normalizePhone(service.contactPhone) === customerPhone;
+    }
+
+    return service.customerId === customer.id;
+  });
 
   useEffect(() => {
     void loadServices();
@@ -30,9 +40,14 @@ export function ServiceTrackPage() {
             Mock API’ye ulaşılamadı; ekrandaki yerel örnek kayıtlar gösteriliyor.
           </div>
         ) : null}
-        {services.map((service) => (
+        {customerServices.length ? customerServices.map((service) => (
           <ServiceCard key={service.id} service={service} />
-        ))}
+        )) : (
+          <div className="rounded-lg bg-slate-50 p-5 text-sm leading-6 text-slate-600">
+            Bu telefon numarasıyla eşleşen servis kaydı bulunamadı. Talep oluştururken yazdığınız
+            telefon numarasıyla giriş yaptığınızdan emin olun.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+import type { PriceOfferItem, PriceOfferStatus } from "../types";
+
 export function generateTrackingNo(existingTrackingNos: string[] = [], date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -14,4 +16,20 @@ export function formatCurrency(amount: number) {
   return `${new Intl.NumberFormat("tr-TR", {
     maximumFractionDigits: 0,
   }).format(amount)}₺`;
+}
+
+export function getOfferItemsWithStatus(items: PriceOfferItem[] = []) {
+  return items.map((item) => ({
+    ...item,
+    status: item.status ?? ("Bekliyor" as PriceOfferStatus),
+  }));
+}
+
+export function sumOfferItemsByStatus(
+  items: PriceOfferItem[] = [],
+  status?: PriceOfferStatus,
+) {
+  return getOfferItemsWithStatus(items)
+    .filter((item) => !status || item.status === status)
+    .reduce((total, item) => total + item.amount, 0);
 }

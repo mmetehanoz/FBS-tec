@@ -7,16 +7,17 @@ export function SiteFooter() {
         <div>
           <h2 className="text-xl font-black text-slate-950">FBS Fırat Bilgisayar Sistemleri</h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
-            1998’den beri Elazığ’da bilgisayar sistemleri, teknik servis, yazılım lisansları,
-            kamera güvenlik çözümleri ve kurumsal destek hizmetleri sunar.
+            1998’den beri Elazığ’da bilgisayar, notebook, yazıcı, yazılım,
+            ağ ve kurumsal bakım alanlarında takip edilebilir teknik servis hizmeti sunar.
           </p>
         </div>
         <div>
-          <h3 className="font-black text-slate-950">Kurumsal</h3>
+          <h3 className="font-black text-slate-950">Teknik Servis</h3>
           <div className="mt-3 grid gap-2 text-sm font-semibold text-slate-600">
             <Link to="/hakkimizda">Hakkımızda</Link>
-            <Link to="/bayilikler">Bayilikler</Link>
-            <Link to="/yeterlilikler">Yeterlilikler</Link>
+            <Link to="/yeterlilikler">Servis Süreci</Link>
+            <Link to="/servis-talebi">Servis Talebi</Link>
+            <Link to="/servis-takip">Servis Takip</Link>
             <Link to="/iletisim">İletişim</Link>
           </div>
         </div>

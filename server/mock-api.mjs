@@ -15,63 +15,27 @@ const serviceStatuses = [
   "Teslim Edildi",
 ];
 
-let services = [
-  {
-    id: "svc-1",
-    trackingNo: "FBS-2026-05-02-001",
-    customerId: "cus-1",
-    productCategory: "Notebook",
-    brand: "Lenovo",
-    model: "ThinkPad E15",
-    serialNo: "LNV-E15-8X21",
-    warranty: "Garanti dışı",
-    issueTitle: "Açılışta siyah ekran",
-    description: "Cihaz güç alıyor ancak ekrana görüntü gelmiyor.",
-    urgency: "Acil",
-    preference: "Ürün adresten alınsın",
-    address: "Cumhuriyet Mah. Malatya Cad. No: 42 Elazığ",
-    appointment: "06 Mayıs 2026, 10:30",
-    currentStatus: "Fiyat Onayı Bekleniyor",
-    lastUpdate: "03 Mayıs 2026, 14:20",
-    estimatedDelivery: "07 Mayıs 2026",
-    technician: "Murat Demir",
-    visibleNotes: ["Anakart güç hattında kısa devre tespit edildi."],
-    internalNotes: ["BIOS hattı da test edilecek."],
-    photos: [],
-    priceOffer: {
-      title: "Anakart güç devresi onarımı",
-      amount: 2450,
-      status: "Bekliyor",
-    },
-    timeline: [
-      {
-        status: "Talep Alındı",
-        date: "02 Mayıs 2026, 09:12",
-        note: "Servis talebi müşteri portalından oluşturuldu.",
-        completed: true,
-      },
-      {
-        status: "Fiyat Onayı Bekleniyor",
-        date: "03 Mayıs 2026, 14:35",
-        note: "Teklif müşteriye iletildi.",
-        completed: false,
-      },
-    ],
-    messages: [
-      {
-        id: "msg-1",
-        from: "technician",
-        text: "Merhaba, cihazınızda güç hattı arızası tespit ettik.",
-        time: "14:24",
-      },
-    ],
-  },
-];
+let services = [];
+let customers = [];
+
+function normalizePhone(phone = "") {
+  const digits = String(phone).replace(/\D/g, "");
+
+  if (digits.startsWith("90") && digits.length === 12) {
+    return digits.slice(2);
+  }
+
+  if (digits.startsWith("0") && digits.length === 11) {
+    return digits.slice(1);
+  }
+
+  return digits;
+}
 
 function sendJson(response, status, data) {
   response.writeHead(status, {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
+  "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json; charset=utf-8",
   });
@@ -106,6 +70,35 @@ function generateTrackingNo() {
   return `${prefix}-${String(sequence).padStart(3, "0")}`;
 }
 
+function upsertCustomer(payload) {
+  const phone = payload.contactPhone ?? payload.phone ?? "";
+  const normalizedPhone = normalizePhone(phone);
+  const id = payload.customerId?.startsWith("cus-")
+    ? payload.customerId
+    : `cus-${normalizedPhone || Date.now()}`;
+  const existingIndex = customers.findIndex(
+    (customer) => customer.id === id || normalizePhone(customer.phone) === normalizedPhone,
+  );
+  const customer = {
+    id: existingIndex >= 0 ? customers[existingIndex].id : id,
+    name: payload.contactName ?? payload.name ?? customers[existingIndex]?.name ?? "Müşteri",
+    phone: phone || customers[existingIndex]?.phone || "",
+    email:
+      payload.contactEmail === "Belirtilmedi"
+        ? customers[existingIndex]?.email ?? ""
+        : payload.contactEmail ?? payload.email ?? customers[existingIndex]?.email ?? "",
+    addresses: payload.address ? [payload.address] : customers[existingIndex]?.addresses ?? [],
+  };
+
+  if (existingIndex >= 0) {
+    customers[existingIndex] = customer;
+  } else {
+    customers = [customer, ...customers];
+  }
+
+  return customer;
+}
+
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url ?? "/", `http://${request.headers.host}`);
 
@@ -124,6 +117,64 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (url.pathname === "/api/customers" && request.method === "GET") {
+    sendJson(response, 200, customers);
+    return;
+  }
+
+  if (url.pathname === "/api/customers" && request.method === "POST") {
+    try {
+      const payload = await readBody(request);
+      const customer = upsertCustomer(payload);
+      sendJson(response, 201, customer);
+    } catch {
+      sendJson(response, 400, { error: "Geçersiz JSON gövdesi" });
+    }
+    return;
+  }
+
+  const customerMatch = url.pathname.match(/^\/api\/customers\/([^/]+)$/);
+  if (customerMatch && request.method === "GET") {
+    const customer = customers.find((item) => item.id === customerMatch[1]);
+    sendJson(response, customer ? 200 : 404, customer ?? { error: "Müşteri bulunamadı" });
+    return;
+  }
+
+  if (customerMatch && request.method === "PATCH") {
+    try {
+      const payload = await readBody(request);
+      const customerIndex = customers.findIndex((item) => item.id === customerMatch[1]);
+
+      if (customerIndex === -1) {
+        sendJson(response, 404, { error: "Müşteri bulunamadı" });
+        return;
+      }
+
+      customers[customerIndex] = {
+        ...customers[customerIndex],
+        ...payload,
+        addresses: Array.isArray(payload.addresses)
+          ? payload.addresses
+          : customers[customerIndex].addresses,
+      };
+      services = services.map((service) =>
+        service.customerId === customers[customerIndex].id
+          ? {
+              ...service,
+              contactName: customers[customerIndex].name,
+              contactPhone: customers[customerIndex].phone,
+              contactEmail: customers[customerIndex].email || "Belirtilmedi",
+              address: customers[customerIndex].addresses[0] ?? service.address,
+            }
+          : service,
+      );
+      sendJson(response, 200, customers[customerIndex]);
+    } catch {
+      sendJson(response, 400, { error: "Geçersiz JSON gövdesi" });
+    }
+    return;
+  }
+
   if (url.pathname === "/api/services" && request.method === "GET") {
     sendJson(response, 200, services);
     return;
@@ -132,6 +183,7 @@ const server = http.createServer(async (request, response) => {
   if (url.pathname === "/api/services" && request.method === "POST") {
     try {
       const payload = await readBody(request);
+      const customer = upsertCustomer(payload);
       const now = new Date().toLocaleString("tr-TR", {
         dateStyle: "medium",
         timeStyle: "short",
@@ -139,6 +191,10 @@ const server = http.createServer(async (request, response) => {
       const service = {
         ...payload,
         id: `svc-${Date.now()}`,
+        customerId: customer.id,
+        contactName: customer.name,
+        contactPhone: customer.phone,
+        contactEmail: customer.email || "Belirtilmedi",
         trackingNo: generateTrackingNo(),
         currentStatus: payload.currentStatus ?? "Talep Alındı",
         lastUpdate: now,
@@ -190,6 +246,14 @@ const server = http.createServer(async (request, response) => {
           timeStyle: "short",
         }),
       };
+      if (
+        payload.contactName ||
+        payload.contactPhone ||
+        payload.contactEmail ||
+        payload.address
+      ) {
+        upsertCustomer(services[serviceIndex]);
+      }
       sendJson(response, 200, services[serviceIndex]);
     } catch {
       sendJson(response, 400, { error: "Geçersiz JSON gövdesi" });

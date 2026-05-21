@@ -5,11 +5,10 @@ import { cn } from "../utils/cn";
 const navItems = [
   { label: "Ana Sayfa", path: "/" },
   { label: "Hakkımızda", path: "/hakkimizda" },
-  { label: "Bayilikler", path: "/bayilikler" },
-  { label: "Yeterlilikler", path: "/yeterlilikler" },
-  { label: "İletişim", path: "/iletisim" },
+  { label: "Servis Süreci", path: "/yeterlilikler" },
   { label: "Servis Talep", path: "/servis-talebi" },
   { label: "Servis Takip", path: "/servis-takip" },
+  { label: "İletişim", path: "/iletisim" },
 ];
 
 export function DesktopHeader() {

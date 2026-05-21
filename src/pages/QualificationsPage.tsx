@@ -10,7 +10,7 @@ const qualifications: Array<{ title: string; text: string; icon: LucideIcon }> =
   },
   {
     title: "Kurulum Yetkinliği",
-    text: "Kamera sistemi, PC kurulumu, ağ ve çevre birimi yapılandırmalarında saha deneyimi.",
+    text: "PC, yazıcı, ağ ve çevre birimi yapılandırmalarında saha deneyimi.",
     icon: Award,
   },
   {
@@ -29,13 +29,13 @@ export function QualificationsPage() {
   return (
     <div className="px-5 pb-6 pt-6 md:px-0 md:pt-0">
       <section className="rounded-lg bg-brand-900 p-5 text-white shadow-soft md:p-8 lg:p-10">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-100">Yeterlilikler</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-100">Servis süreci</p>
         <h1 className="mt-3 max-w-4xl text-3xl font-black leading-tight md:text-5xl">
-          Servis kalitesi, süreç takibi ve saha deneyimi bir arada.
+          Arıza kaydından teslimata kadar standart teknik servis akışı.
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-200 md:text-base">
-          FBS’nin yeterlilik yaklaşımı yalnızca teknik müdahaleye değil; kayıt, iletişim,
-          fiyat onayı, test ve teslim süreçlerinin düzenli yönetilmesine dayanır.
+          FBS teknik servis yaklaşımı yalnızca onarıma değil; kayıt, ön inceleme, müşteri
+          iletişimi, fiyat onayı, test ve teslim süreçlerinin düzenli yönetilmesine dayanır.
         </p>
       </section>
 

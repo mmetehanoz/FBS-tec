@@ -1,4 +1,4 @@
-import { BadgeCheck, Boxes, KeyRound, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Boxes, KeyRound, Printer } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "../components/ui";
 
@@ -14,9 +14,9 @@ const partnerships: Array<{ title: string; text: string; icon: LucideIcon }> = [
     icon: KeyRound,
   },
   {
-    title: "Güvenlik Sistemleri",
-    text: "Kamera, kayıt cihazı ve güvenlik altyapısı ürünleri için kurulum desteği.",
-    icon: ShieldCheck,
+    title: "Yazıcı ve Çevre Birimleri",
+    text: "Yazıcı, tarayıcı, toner, bağlantı ve ofis çevre birimleri için servis desteği.",
+    icon: Printer,
   },
   {
     title: "Servis Ekosistemi",
@@ -31,10 +31,10 @@ export function PartnershipsPage() {
       <section className="rounded-lg bg-white p-5 shadow-soft md:p-8 lg:p-10">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-600">Bayilikler</p>
         <h1 className="mt-3 max-w-4xl text-3xl font-black leading-tight text-slate-950 md:text-5xl">
-          Donanım, yazılım ve güvenlik çözümlerinde güvenilir tedarik ağı.
+          Donanım, yazılım ve ofis servislerinde güvenilir tedarik ağı.
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">
-          FBS; bilgisayar sistemleri, yazılım lisansları ve kamera güvenlik çözümlerinde marka
+          FBS; bilgisayar sistemleri, yazılım lisansları, yazıcı ve çevre birimi çözümlerinde marka
           bağımsız danışmanlıkla müşterisine doğru ürünü, doğru servis modeliyle ulaştırmayı
           hedefler.
         </p>

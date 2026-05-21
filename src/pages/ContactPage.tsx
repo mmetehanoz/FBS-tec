@@ -74,11 +74,11 @@ export function ContactPage() {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-600">İletişim</p>
           <h1 className="mt-3 text-3xl font-black leading-tight text-slate-950 md:text-5xl">
-            Satış, servis ve kurumsal destek için FBS’ye ulaşın.
+            Teknik servis, yerinde destek ve servis takibi için FBS’ye ulaşın.
           </h1>
           <p className="mt-4 text-sm leading-7 text-slate-600 md:text-base">
-            Teknik servis randevusu, ürün danışmanlığı, kamera sistemi keşfi veya kurumsal bakım
-            talepleriniz için iletişim formunu kullanabilirsiniz.
+            Bilgisayar, notebook, yazıcı, yazılım, ağ veya kurumsal bakım talepleriniz
+            için iletişim formunu kullanabilirsiniz.
           </p>
           <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-1">
             {contactDetails.map((item) => (
@@ -93,11 +93,11 @@ export function ContactPage() {
               <Input placeholder="Adınız soyadınız" />
             </Field>
             <Field label="Telefon">
-              <Input placeholder="+90 5__ ___ __ __" />
+              <Input placeholder="+90 ___ ___ __ __" />
             </Field>
           </div>
           <Field label="Konu">
-            <Input placeholder="Satış, servis, kamera sistemi..." />
+            <Input placeholder="Teknik servis, yazıcı, ağ, bakım..." />
           </Field>
           <Field label="Mesaj">
             <Textarea placeholder="Nasıl yardımcı olabiliriz?" />

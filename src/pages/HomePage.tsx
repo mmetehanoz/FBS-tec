@@ -1,22 +1,21 @@
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Award,
-  Camera,
   CheckCircle2,
   ClipboardCheck,
-  Cpu,
-  KeyRound,
-  Laptop,
-  MapPin,
+  FileCheck2,
+  HardDrive,
+  Home,
+  MessageCircle,
   MonitorCog,
   Network,
   PhoneCall,
-  ShoppingBag,
+  Printer,
+  Search,
   ShieldCheck,
   Sparkles,
-  Truck,
-  Zap,
+  TimerReset,
+  Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -24,87 +23,84 @@ import { services } from "../data/mockData";
 import { Card } from "../components/ui";
 
 const highlights = [
-  { value: "1998", label: "kuruluş" },
-  { value: "Elazığ", label: "yerel servis ağı" },
-  { value: "6+", label: "ana hizmet grubu" },
-  { value: "B2C/B2B", label: "müşteri modeli" },
+  { value: "1998", label: "Elazığ’da servis deneyimi" },
+  { value: "10", label: "adımlı takip süreci" },
+  { value: "SMS", label: "müşteri bilgilendirme" },
+  { value: "A-Z", label: "teslimata kadar servis" },
 ];
 
-const solutionAreas = [
+const repairAreas: Array<{ title: string; text: string; icon: LucideIcon }> = [
   {
-    title: "Bilgisayar Sistemleri",
-    text: "Masaüstü, notebook, oyuncu ve ofis sistemlerinde ürün seçimi, kurulum ve yükseltme.",
-    icon: Cpu,
+    title: "Notebook & masaüstü onarım",
+    text: "Açılmama, yavaşlama, ekran, disk, RAM, anakart ve güç arızaları için ön inceleme.",
+    icon: MonitorCog,
   },
   {
-    title: "Güvenlik Kameraları",
-    text: "Keşif, kamera seçimi, kayıt sistemi kurulumu ve bakım planlaması.",
-    icon: Camera,
+    title: "Yazıcı ve çevre birimi servisi",
+    text: "Yazdırmama, tarama, toner, ağ bağlantısı, sürücü ve kurulum sorunları için destek.",
+    icon: Printer,
   },
   {
-    title: "Yazılım & Lisans",
-    text: "İşletim sistemi, ofis, antivirüs ve kurumsal yazılım lisans tedariği.",
-    icon: KeyRound,
+    title: "Yazılım, format ve lisans",
+    text: "Windows kurulumu, sürücü düzenleme, lisans kontrolü, antivirüs ve temel güvenlik ayarları.",
+    icon: ShieldCheck,
   },
   {
-    title: "Ağ & Kurumsal Destek",
-    text: "İşletmeler için ağ altyapısı, yerinde müdahale ve periyodik bakım.",
+    title: "Ağ ve kurumsal bakım",
+    text: "Ofis bilgisayarları, modem/router, yerel ağ, yazıcı ve düzenli bakım talepleri.",
     icon: Network,
   },
 ];
 
-const brands = ["Lenovo", "HP", "Dell", "Asus", "Hikvision", "Microsoft", "ESET", "Logitech"];
-
-const productPromos = [
+const processSteps: Array<{ title: string; text: string; icon: LucideIcon }> = [
   {
-    title: "Ofis PC Paketleri",
-    text: "Muhasebe, stok, yazışma ve günlük operasyon için dengeli sistemler.",
-    tag: "Satış + kurulum",
-    icon: Laptop,
-    tone: "bg-brand-50 text-brand-700",
+    title: "Talep oluştur",
+    text: "Ürün, arıza, servis tercihi ve uygun zaman bilgilerini girin.",
+    icon: ClipboardCheck,
   },
   {
-    title: "Kamera Keşif & Kurulum",
-    text: "İşyeri ve apartmanlar için kayıt cihazı dahil uçtan uca güvenlik çözümü.",
-    tag: "Yerinde keşif",
-    icon: Camera,
-    tone: "bg-brand-100 text-brand-700",
+    title: "Ön inceleme",
+    text: "Teknik ekip talebi kontrol eder ve servis planını oluşturur.",
+    icon: Search,
   },
   {
-    title: "Lisans & Güvenlik",
-    text: "Windows, Office ve antivirüs lisanslarında doğru ürün danışmanlığı.",
-    tag: "Kurumsal uygunluk",
-    icon: ShieldCheck,
-    tone: "bg-slate-100 text-brand-700",
+    title: "Fiyat onayı",
+    text: "Ücretli işlem gerekiyorsa kalemli teklif müşteri paneline düşer.",
+    icon: FileCheck2,
+  },
+  {
+    title: "Onarım ve test",
+    text: "Onay sonrası işlem yapılır, test edilir ve teslimata hazırlanır.",
+    icon: Wrench,
   },
 ];
 
 const tickerItems = [
-  "PC donanım satışı",
-  "Notebook yükseltme",
-  "Kamera sistemi kurulumu",
-  "Windows & Office lisans",
-  "Antivirüs çözümleri",
-  "Yerinde teknik servis",
-  "Kurumsal bakım",
-  "Ağ altyapısı",
+  "Notebook arıza tespiti",
+  "Masaüstü PC bakım",
+  "SSD / RAM yükseltme",
+  "Yazıcı arıza servisi",
+  "Windows kurulum",
+  "Ağ ve yazıcı desteği",
+  "Yerinde servis",
+  "Servis takip paneli",
 ];
 
 const quickBenefits: Array<{ title: string; text: string; icon: LucideIcon }> = [
   {
-    title: "Stok & teklif",
-    text: "Güncel ürün grupları için hızlı geri dönüş",
-    icon: ShoppingBag,
+    title: "Takip numarası",
+    text: "Her talep tarih bazlı FBS servis koduyla izlenir.",
+    icon: FileCheck2,
   },
   {
-    title: "Kurulum",
-    text: "Satın aldığınız ürünü çalışır teslim edin",
-    icon: Truck,
+    title: "Fiyat onayı",
+    text: "Onay almadan ücretli onarım başlatılmaz.",
+    icon: CheckCircle2,
   },
   {
-    title: "Hızlı servis",
-    text: "Satış sonrası yerel teknik destek",
-    icon: Zap,
+    title: "Yerinde destek",
+    text: "Uygun taleplerde adresinizde servis planlanır.",
+    icon: Home,
   },
 ];
 
@@ -117,35 +113,34 @@ export function HomePage() {
         <div className="absolute -right-24 top-16 hidden h-72 w-72 rounded-full bg-brand-500/20 blur-3xl md:block" />
         <div className="absolute bottom-0 left-0 h-44 w-full bg-[linear-gradient(0deg,rgba(255,255,255,0.10),rgba(255,255,255,0))]" />
         <div className="relative flex flex-col justify-center p-5 md:p-10 lg:min-h-[560px] lg:p-14">
-          <div className="flex flex-wrap gap-2">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-brand-700">
-              <Sparkles size={15} />
-              Elazığ’ın teknoloji çözüm ortağı
-            </div>
+          <div className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-brand-700">
+            <Sparkles size={15} />
+            FBS Teknik Servis Merkezi
           </div>
           <h1 className="mt-5 max-w-5xl text-4xl font-black leading-tight md:text-6xl">
-            <span className="block text-white">Bilgisayar, kamera ve yazılımda</span>
-            <span className="mt-1 block text-brand-100">doğru ürünü hızlıca bulun.</span>
+            <span className="block text-white">Arıza tespitinden teslimata</span>
+            <span className="mt-1 block text-brand-100">A’dan Z’ye teknik servis.</span>
           </h1>
           <p className="mt-5 max-w-4xl text-base leading-8 text-white/86 md:text-lg">
-            1998’den beri PC donanımı, yazılım lisansları, kamera güvenlik sistemleri,
-            teknik servis ve kurumsal destek ihtiyaçlarınızı tek çatı altında çözüyoruz.
+            Bilgisayar, notebook, yazıcı, yazılım, ağ ve kurumsal bakım taleplerinizi
+            kayıt altına alır; fiyat onayı, onarım, test ve teslim sürecini müşteri panelinden
+            takip edilebilir hale getiririz.
           </p>
 
           <div className="mt-7 grid gap-3 sm:grid-cols-2 md:max-w-2xl">
             <Link
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-[0.98]"
-              to="/iletisim"
-            >
-              <PhoneCall size={19} />
-              Teklif ve danışmanlık alın
-            </Link>
-            <Link
               to="/servis-talebi"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white/10 px-5 py-3 text-sm font-bold text-white ring-1 ring-white/20 transition hover:bg-white/15"
             >
               <ClipboardCheck size={19} />
               Servis talebi oluştur
+            </Link>
+            <Link
+              to="/servis-takip"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white/10 px-5 py-3 text-sm font-bold text-white ring-1 ring-white/20 transition hover:bg-white/15"
+            >
+              <Search size={19} />
+              Servis durumunu takip et
             </Link>
           </div>
 
@@ -179,7 +174,7 @@ export function HomePage() {
               key={`${item}-${index}`}
               className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-white px-4 text-sm font-black text-brand-700 ring-1 ring-white/40"
             >
-              <Sparkles size={15} className="text-brand-600" />
+              <TimerReset size={15} className="text-brand-600" />
               {item}
             </span>
           ))}
@@ -190,80 +185,70 @@ export function HomePage() {
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">
-              Satış vitrini
+              Servis kapsamı
             </p>
             <h2 className="mt-2 text-2xl font-black text-slate-950 md:text-3xl">
-              Bugün konuşulan ihtiyaçlar
+              Teknik servis ihtiyacınızı tek ekrandan başlatın.
             </h2>
           </div>
-          <Link className="inline-flex items-center gap-2 text-sm font-black text-brand-700" to="/iletisim">
-            Teklif iste
+          <Link className="inline-flex items-center gap-2 text-sm font-black text-brand-700" to="/servis-talebi">
+            Talep oluştur
             <ArrowRight size={17} />
           </Link>
         </div>
-        <div className="grid gap-4 lg:grid-cols-3">
-          {productPromos.map((promo, index) => (
+        <div className="grid gap-4 lg:grid-cols-4">
+          {repairAreas.map((area, index) => (
             <motion.div
-              key={promo.title}
+              key={area.title}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.06 }}
+              transition={{ delay: index * 0.05 }}
               whileHover={{ y: -6 }}
             >
-              <Card className="relative h-full overflow-hidden p-5">
-                <div className="absolute right-4 top-4 rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                  {promo.tag}
+              <Card className="h-full p-5">
+                <div className="grid h-14 w-14 place-items-center rounded-lg bg-brand-50 text-brand-700">
+                  <area.icon size={25} />
                 </div>
-                <div className={`grid h-14 w-14 place-items-center rounded-lg ${promo.tone}`}>
-                  <promo.icon size={25} />
-                </div>
-                <h3 className="mt-5 text-xl font-black text-slate-950">{promo.title}</h3>
-                <p className="mt-2 text-sm leading-7 text-slate-600">{promo.text}</p>
-                <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-                  <span className="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-                    FBS önerisi
-                  </span>
-                  <ArrowRight className="text-brand-700" size={19} />
-                </div>
+                <h3 className="mt-5 text-xl font-black text-slate-950">{area.title}</h3>
+                <p className="mt-2 text-sm leading-7 text-slate-600">{area.text}</p>
               </Card>
             </motion.div>
           ))}
         </div>
       </section>
 
-      <section className="mt-6 grid gap-4 md:mt-10 lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="mt-6 grid gap-4 md:mt-10 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">
-            Çözüm alanları
+            Servis akışı
           </p>
           <h2 className="mt-2 text-3xl font-black leading-tight text-slate-950 md:text-4xl">
-            Ev, ofis ve kurumlar için ölçülü teknoloji yatırımı.
+            Her adım kayıtlı, onaylı ve takip edilebilir.
           </h2>
           <p className="mt-4 text-sm leading-7 text-slate-600 md:text-base">
-            FBS yalnızca ürün satmaz; ihtiyacınızı analiz eder, doğru ekipmanı önerir,
-            kurulumunu yapar ve sonrasında ulaşılabilir destek sağlar.
+            FBS servis süreci; talep kaydı, ön inceleme, teknik tespit, fiyat onayı, onarım,
+            test ve teslim aşamalarından oluşur. Müşteri tarafında takip numarasıyla şeffaf
+            bir servis deneyimi sunulur.
           </p>
-          <Link className="mt-5 inline-flex items-center gap-2 text-sm font-black text-brand-700" to="/hakkimizda">
-            Firmayı tanıyın
+          <Link className="mt-5 inline-flex items-center gap-2 text-sm font-black text-brand-700" to="/servis-takip">
+            Servis takibi aç
             <ArrowRight size={17} />
           </Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          {solutionAreas.map((area, index) => (
-            <motion.div
-              key={area.title}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04 }}
-            >
-              <Card className="h-full p-5 transition hover:-translate-y-1 hover:shadow-lg">
-                <div className="mb-4 grid h-12 w-12 place-items-center rounded-lg bg-brand-50 text-brand-700">
-                  <area.icon size={24} />
+          {processSteps.map((step, index) => (
+            <Card key={step.title} className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand-600 text-white">
+                  <step.icon size={22} />
                 </div>
-                <h3 className="font-black text-slate-950">{area.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{area.text}</p>
-              </Card>
-            </motion.div>
+                <span className="text-xs font-black uppercase tracking-[0.14em] text-brand-600">
+                  Adım {index + 1}
+                </span>
+              </div>
+              <h3 className="mt-4 font-black text-slate-950">{step.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{step.text}</p>
+            </Card>
           ))}
         </div>
       </section>
@@ -272,10 +257,10 @@ export function HomePage() {
         <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-100">
-              Hizmet kapsamı
+              Hizmetler
             </p>
             <h2 className="mt-2 text-3xl font-black leading-tight md:text-4xl">
-              Tek seferlik satış değil, sürdürülebilir destek.
+              Servis masasından saha desteğine kadar.
             </h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -297,10 +282,10 @@ export function HomePage() {
               <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:30px_30px]" />
               <div className="relative grid h-full content-center gap-3">
                 {[
-                  ["Talep", "09:20", "bg-brand-600"],
-                  ["Keşif", "11:00", "bg-brand-500"],
-                  ["Kurulum", "14:30", "bg-brand-100"],
-                  ["Destek", "Aktif", "bg-brand-700"],
+                  ["Talep", "Alındı", "bg-brand-600"],
+                  ["Ön inceleme", "Sırada", "bg-brand-500"],
+                  ["Fiyat onayı", "Bekler", "bg-brand-100"],
+                  ["Test", "Teslim öncesi", "bg-brand-700"],
                 ].map(([label, time, color], index) => (
                   <motion.div
                     key={label}
@@ -319,17 +304,17 @@ export function HomePage() {
             </div>
             <div className="p-5 md:p-7">
               <div className="grid h-12 w-12 place-items-center rounded-lg bg-brand-50 text-brand-700">
-                <MonitorCog size={25} />
+                <MessageCircle size={25} />
               </div>
               <h2 className="mt-4 text-2xl font-black text-slate-950">
-                Kurumsal bakım ve saha servisleri
+                Teknik ekiple iletişim aynı panelde.
               </h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">
-                İşletmeler için bilgisayar, kamera, ağ ve yazılım tarafında düzenli kontrol,
-                hızlı müdahale ve kayıt altına alınan servis süreçleri sağlar.
+                Servis notları, fiyat teklifi, müşteri onayı ve mesajlaşma alanı tek müşteri
+                portalında toplanır. Müşteri hangi aşamada olduğunu kolayca görür.
               </p>
               <div className="mt-5 grid gap-2 text-sm font-bold text-slate-700">
-                {["Yerinde servis planlama", "Fiyat onaylı işlem akışı", "Servis geçmişi ve not takibi"].map((item) => (
+                {["Takip numarası", "Kalemli fiyat teklifi", "Teknik servis mesajları"].map((item) => (
                   <span key={item} className="flex items-center gap-2">
                     <CheckCircle2 size={17} className="text-brand-600" />
                     {item}
@@ -342,91 +327,54 @@ export function HomePage() {
 
         <Card className="p-5 md:p-7">
           <div className="grid h-12 w-12 place-items-center rounded-lg bg-brand-50 text-brand-700">
-            <Award size={25} />
+            <HardDrive size={25} />
           </div>
-          <h2 className="mt-4 text-2xl font-black text-slate-950">Bayilik ve yeterlilik yaklaşımı</h2>
+          <h2 className="mt-4 text-2xl font-black text-slate-950">Servise bırak, adresten aldır veya yerinde destek iste.</h2>
           <p className="mt-3 text-sm leading-7 text-slate-600">
-            Donanım, yazılım ve güvenlik ürünlerinde marka bağımsız danışmanlıkla, ihtiyaca uygun
-            ve servis edilebilir çözümler önerilir.
+            Talep formunda servis tercihinizi seçin. Uygun durumlarda yerinde servis planlanır,
+            ürün adresten alınır veya müşteri ürünü doğrudan FBS servisine bırakır.
           </p>
           <div className="mt-5 grid gap-3">
-            <Link className="rounded-lg bg-slate-50 p-4 font-black text-slate-950 transition hover:bg-brand-50 hover:text-brand-700" to="/bayilikler">
-              Bayilikler ve ürün grupları
+            <Link className="rounded-lg bg-slate-50 p-4 font-black text-slate-950 transition hover:bg-brand-50 hover:text-brand-700" to="/servis-talebi">
+              Yeni servis talebi oluştur
             </Link>
-            <Link className="rounded-lg bg-slate-50 p-4 font-black text-slate-950 transition hover:bg-brand-50 hover:text-brand-700" to="/yeterlilikler">
-              Teknik yeterlilikler
+            <Link className="rounded-lg bg-slate-50 p-4 font-black text-slate-950 transition hover:bg-brand-50 hover:text-brand-700" to="/iletisim">
+              Teknik servis ile iletişime geç
             </Link>
           </div>
         </Card>
-      </section>
-
-      <section className="mt-6 md:mt-10">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">
-              Çalışılan ürün grupları
-            </p>
-            <h2 className="mt-2 text-2xl font-black text-slate-950 md:text-3xl">
-              Tanıdık markalar, doğru konfigürasyon.
-            </h2>
-          </div>
-          <Link className="inline-flex items-center gap-2 text-sm font-black text-brand-700" to="/bayilikler">
-            Detaylar
-            <ArrowRight size={17} />
-          </Link>
-        </div>
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white p-3 shadow-soft">
-          <div className="flex w-max animate-marquee gap-3">
-            {[...brands, ...brands, ...brands].map((brand, index) => (
-              <div
-                key={`${brand}-${index}`}
-                className="grid min-h-20 w-36 place-items-center rounded-lg bg-slate-50 px-3 text-center text-sm font-black text-slate-600 ring-1 ring-slate-100"
-              >
-                {brand}
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       <section className="mt-6 overflow-hidden rounded-lg bg-brand-700 text-white shadow-soft md:mt-10">
         <div className="grid gap-6 p-5 md:grid-cols-[1fr_auto] md:items-center md:p-8 lg:p-10">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-100">
-              Projenizi konuşalım
+              Servis kaydı başlatın
             </p>
             <h2 className="mt-2 text-3xl font-black leading-tight">
-              Bilgisayar, kamera veya kurumsal destek ihtiyacınız için FBS’den teklif alın.
+              Cihazınız, yazıcınız veya ağ altyapınız için teknik servis talebi oluşturun.
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-white/90">
-              İhtiyacınızı yazın; ürün, kurulum ve servis tarafında uygulanabilir bir yol haritası
-              çıkaralım.
+              Talep sonrası sistem otomatik takip numarası üretir ve süreci müşteri panelinden
+              takip edebilirsiniz.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 md:w-72 md:grid-cols-1">
             <Link
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-black text-brand-700 transition hover:bg-brand-50"
-              to="/iletisim"
+              to="/servis-talebi"
             >
-              <MapPin size={18} />
-              İletişime geç
+              <ClipboardCheck size={18} />
+              Talep oluştur
             </Link>
             <Link
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-brand-900/40 px-5 py-3 text-sm font-black text-white ring-1 ring-white/20 transition hover:bg-brand-900/55"
-              to="/servis-takip"
+              to="/iletisim"
             >
-              <ShieldCheck size={18} />
-              Servis takip
+              <PhoneCall size={18} />
+              Bize ulaşın
             </Link>
           </div>
-        </div>
-        <div className="grid border-t border-white/15 bg-brand-900/30 text-sm font-bold text-white md:grid-cols-3">
-          {["Satış danışmanlığı", "Yerinde keşif", "Servis sonrası destek"].map((item) => (
-            <div key={item} className="flex min-h-14 items-center justify-center gap-2 border-white/15 px-4 md:border-r md:last:border-r-0">
-              <CheckCircle2 size={17} className="text-brand-100" />
-              {item}
-            </div>
-          ))}
         </div>
       </section>
     </div>

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck, Smartphone, UserPlus } from "lucide-react";
 import { Button, Card, Field, Input } from "../components/ui";
 import { usePortalStore } from "../hooks/usePortalStore";
+import { formatTurkishMobileInput, isValidTurkishMobile, normalizePhone, phonePrefix } from "../utils/phone";
 
 type AuthMode = "login" | "register";
 type AuthStep = "details" | "otp";
@@ -11,7 +12,7 @@ export function LoginPage() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [step, setStep] = useState<AuthStep>("details");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(phonePrefix);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const login = usePortalStore((state) => state.login);
@@ -22,8 +23,8 @@ export function LoginPage() {
 
   const isRegister = mode === "register";
   const canContinue = isRegister
-    ? name.trim().length > 2 && phone.trim().length >= 10 && email.includes("@")
-    : phone.trim().length >= 10;
+    ? name.trim().length > 2 && isValidTurkishMobile(phone) && email.includes("@")
+    : isValidTurkishMobile(phone);
 
   const resetMode = (nextMode: AuthMode) => {
     setMode(nextMode);
@@ -32,10 +33,11 @@ export function LoginPage() {
   };
 
   const verify = () => {
+    const normalizedPhone = normalizePhone(phone);
     if (isRegister) {
-      registerCustomer({ name, phone, email });
+      registerCustomer({ name, phone: normalizedPhone, email });
     } else {
-      login({ phone });
+      login({ phone: normalizedPhone });
     }
     navigate(from, { replace: true });
   };
@@ -99,9 +101,14 @@ export function LoginPage() {
               <Field label="Telefon numarası">
                 <Input
                   inputMode="tel"
-                  placeholder="+90 5__ ___ __ __"
+                  placeholder="+90 ___ ___ __ __"
                   value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
+                  onChange={(event) => setPhone(formatTurkishMobileInput(event.target.value))}
+                  onFocus={(event) => {
+                    if (!event.target.value.trim()) {
+                      setPhone(phonePrefix);
+                    }
+                  }}
                 />
               </Field>
               {isRegister ? (

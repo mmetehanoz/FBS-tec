@@ -11,7 +11,7 @@ export function AdminSmsPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <Card className="space-y-4 p-5">
           <Field label="Telefon numarası">
-            <Input placeholder="+90 5__ ___ __ __" />
+            <Input placeholder="+90 ___ ___ __ __" />
           </Field>
           <Field label="Mesaj">
             <Textarea placeholder="FBS servis bilgilendirme mesajı" />

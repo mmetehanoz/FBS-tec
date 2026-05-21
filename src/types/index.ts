@@ -19,6 +19,8 @@ export type ServicePreference =
   | "Ürün adresten alınsın"
   | "Kendim servise bırakacağım";
 
+export type PriceOfferStatus = "Bekliyor" | "Onaylandı" | "Reddedildi";
+
 export interface Customer {
   id: string;
   name: string;
@@ -46,6 +48,9 @@ export interface ServiceRecord {
   id: string;
   trackingNo: string;
   customerId: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
   productCategory: string;
   brand: string;
   model: string;
@@ -67,7 +72,7 @@ export interface ServiceRecord {
   priceOffer?: {
     title: string;
     amount: number;
-    status: "Bekliyor" | "Onaylandı" | "Reddedildi";
+    status: PriceOfferStatus;
     items?: PriceOfferItem[];
   };
   timeline: TimelineItem[];
@@ -78,6 +83,7 @@ export interface PriceOfferItem {
   id: string;
   title: string;
   amount: number;
+  status?: PriceOfferStatus;
 }
 
 export interface NavItem {
