@@ -1,4 +1,4 @@
-import { Home, MessageCircle, PlusCircle, Search, User } from "lucide-react";
+import { Home, MessageCircle, PhoneCall, PlusCircle, Search } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "../utils/cn";
 import type { NavItem } from "../types";
@@ -8,7 +8,7 @@ const navItems: NavItem[] = [
   { label: "Talep", path: "/servis-talebi", icon: PlusCircle },
   { label: "Takip", path: "/servis-takip", icon: Search },
   { label: "Mesaj", path: "/mesajlar", icon: MessageCircle },
-  { label: "Hesap", path: "/hesabim", icon: User },
+  { label: "Ulaşın", path: "/iletisim", icon: PhoneCall },
 ];
 
 export function BottomNav() {
