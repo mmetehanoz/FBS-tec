@@ -3,12 +3,14 @@ import {
   BarChart3,
   BellRing,
   ClipboardList,
+  LogOut,
   MessageSquare,
   Users,
 } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "../utils/cn";
 import { usePortalStore } from "../hooks/usePortalStore";
+import { ScrollToTop } from "../components/ScrollToTop";
 
 const adminNav = [
   { label: "Dashboard", path: "/admin", icon: BarChart3 },
@@ -20,13 +22,21 @@ const adminNav = [
 
 export function AdminLayout() {
   const loadServices = usePortalStore((state) => state.loadServices);
+  const adminLogout = usePortalStore((state) => state.adminLogout);
+  const navigate = useNavigate();
 
   useEffect(() => {
     void loadServices();
   }, [loadServices]);
 
+  const handleLogout = () => {
+    adminLogout();
+    navigate("/admin/giris", { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 lg:flex">
+      <ScrollToTop />
       <aside className="sticky top-0 z-30 border-b border-slate-200 bg-white lg:h-screen lg:w-72 lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between px-5 py-4 lg:block lg:space-y-8">
           <div>
@@ -54,6 +64,14 @@ export function AdminLayout() {
               {item.label}
             </NavLink>
           ))}
+          <button
+            className="flex min-h-11 shrink-0 items-center gap-3 rounded-lg px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
+            type="button"
+            onClick={handleLogout}
+          >
+            <LogOut size={19} />
+            Çıkış
+          </button>
         </nav>
       </aside>
       <main className="flex-1 p-4 sm:p-6 lg:p-8">

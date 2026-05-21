@@ -3,6 +3,10 @@ import { customers, serviceRecords } from "../data/mockData";
 import { serviceApi } from "../lib/api";
 import type { Customer, Message, ServiceRecord } from "../types";
 
+const adminSessionKey = "fbs-admin-session";
+const isAdminSessionActive = () =>
+  typeof window !== "undefined" && window.localStorage.getItem(adminSessionKey) === "active";
+
 const defaultCustomer: Customer = {
   id: "guest",
   name: "",
@@ -16,9 +20,12 @@ interface PortalState {
   customers: Customer[];
   services: ServiceRecord[];
   isAuthenticated: boolean;
+  isAdminAuthenticated: boolean;
   serviceApiStatus: "idle" | "loading" | "ready" | "error";
   login: (customerUpdates?: Partial<Customer>) => void;
   logout: () => void;
+  adminLogin: (username: string, password: string) => boolean;
+  adminLogout: () => void;
   registerCustomer: (customer: Pick<Customer, "name" | "phone" | "email">) => void;
   loadCustomers: () => Promise<void>;
   createCustomer: (customer: Customer) => Promise<Customer>;
@@ -35,6 +42,7 @@ export const usePortalStore = create<PortalState>((set) => ({
   customers,
   services: serviceRecords,
   isAuthenticated: false,
+  isAdminAuthenticated: isAdminSessionActive(),
   serviceApiStatus: "idle",
   login: (customerUpdates) =>
     set((state) => ({
@@ -42,6 +50,20 @@ export const usePortalStore = create<PortalState>((set) => ({
       customer: customerUpdates ? { ...state.customer, ...customerUpdates } : state.customer,
     })),
   logout: () => set({ isAuthenticated: false }),
+  adminLogin: (username, password) => {
+    const isValid = username.trim() === "admin" && password === "Fbs1997*";
+
+    if (isValid) {
+      window.localStorage.setItem(adminSessionKey, "active");
+      set({ isAdminAuthenticated: true });
+    }
+
+    return isValid;
+  },
+  adminLogout: () => {
+    window.localStorage.removeItem(adminSessionKey);
+    set({ isAdminAuthenticated: false });
+  },
   registerCustomer: (customer) =>
     set((state) => ({
       isAuthenticated: true,

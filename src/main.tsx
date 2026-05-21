@@ -16,6 +16,7 @@ import { ContactPage } from "./pages/ContactPage";
 import { PartnershipsPage } from "./pages/PartnershipsPage";
 import { QualificationsPage } from "./pages/QualificationsPage";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
+import { AdminLoginPage } from "./pages/admin/AdminLoginPage";
 import { AdminRequestsPage } from "./pages/admin/AdminRequestsPage";
 import { AdminServiceDetailPage } from "./pages/admin/AdminServiceDetailPage";
 import { AdminCustomersPage } from "./pages/admin/AdminCustomersPage";
@@ -23,6 +24,7 @@ import { AdminMessagesPage } from "./pages/admin/AdminMessagesPage";
 import { AdminSmsPage } from "./pages/admin/AdminSmsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AdminProtectedRoute } from "./components/AdminProtectedRoute";
 
 const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -74,8 +76,16 @@ const router = createBrowserRouter(
       ],
     },
     {
+      path: "/admin/giris",
+      element: <AdminLoginPage />,
+    },
+    {
       path: "/admin",
-      element: <AdminLayout />,
+      element: (
+        <AdminProtectedRoute>
+          <AdminLayout />
+        </AdminProtectedRoute>
+      ),
       children: [
         { index: true, element: <AdminDashboardPage /> },
         { path: "servis-talepleri", element: <AdminRequestsPage /> },
