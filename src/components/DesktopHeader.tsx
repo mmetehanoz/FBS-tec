@@ -10,13 +10,15 @@ const navItems = [
   { label: "Servis Takip", path: "/servis-takip" },
 ];
 
+const logoSrc = `${import.meta.env.BASE_URL}FBS-TEK-LOGO.png`;
+
 export function DesktopHeader() {
   return (
     <header className="sticky top-0 z-30 hidden border-b border-slate-200 bg-white/92 shadow-sm backdrop-blur md:block">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link to="/" className="flex items-center gap-3">
           <img
-            src="/FBS-TEK-LOGO.png"
+            src={logoSrc}
             alt="FBS Fırat Bilgisayar Sistemleri"
             className="h-12 w-auto object-contain"
           />

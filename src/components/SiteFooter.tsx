@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 
+const logoSrc = `${import.meta.env.BASE_URL}FBS-TEK-LOGO.png`;
+
 export function SiteFooter() {
   return (
     <footer className="hidden border-t border-slate-200 bg-white md:block">
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <div>
           <img
-            src="/FBS-TEK-LOGO.png"
+            src={logoSrc}
             alt="FBS Fırat Bilgisayar Sistemleri"
             className="h-14 w-auto object-contain"
           />

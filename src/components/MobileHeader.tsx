@@ -1,13 +1,15 @@
 import { PhoneCall } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const logoSrc = `${import.meta.env.BASE_URL}FBS-TEK-LOGO.png`;
+
 export function MobileHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-5 py-3 backdrop-blur md:hidden">
       <div className="flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <img
-            src="/FBS-TEK-LOGO.png"
+            src={logoSrc}
             alt="FBS Fırat Bilgisayar Sistemleri"
             className="h-10 w-auto object-contain"
           />
