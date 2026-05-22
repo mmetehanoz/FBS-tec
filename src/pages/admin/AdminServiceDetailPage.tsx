@@ -510,10 +510,6 @@ export function AdminServiceDetailPage() {
               <Button type="button" onClick={saveOperationDetails}>
                 Operasyonu ve notları kaydet
               </Button>
-              <Button type="button" variant="secondary">
-                <Send size={18} />
-                SMS gönder
-              </Button>
             </div>
           </Card>
 
