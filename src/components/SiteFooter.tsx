@@ -34,7 +34,6 @@ export function SiteFooter() {
             <Link to="/servis-talebi">Servis Talebi Oluştur</Link>
             <Link to="/servis-takip">Servis Takip</Link>
             <Link to="/mesajlar">Mesajlar</Link>
-            <Link to="/admin">Admin Panel</Link>
           </div>
         </div>
         <div>
