@@ -6,10 +6,13 @@
   "scripts": {
     "api": "node server/api.mjs",
     "api:mock": "node server/mock-api.mjs",
+    "api:prod": "NODE_ENV=production node server/api.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "node server/seed-admin.mjs",
+    "admin:set": "node server/admin-cli.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",

@@ -1,0 +1,73 @@
+# =============================================================================
+# FBS Teknik Servis — Nginx Reverse Proxy Örneği
+#
+# Bu dosya örnek niteliğindedir. Sunucunuzdaki gerçek alan adı ve
+# sertifika yollarını değiştirin.
+#
+# Kurulum:
+#   sudo cp scripts/nginx.conf.example /etc/nginx/sites-available/fbs-tec
+#   sudo ln -s /etc/nginx/sites-available/fbs-tec /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#
+# SSL için Let's Encrypt:
+#   sudo certbot --nginx -d siteniz.com
+# =============================================================================
+
+server {
+    listen 80;
+    server_name siteniz.com www.siteniz.com;
+
+    # Let's Encrypt HTTP challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # HTTP → HTTPS yönlendirme
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name siteniz.com www.siteniz.com;
+
+    # SSL sertifikaları (certbot otomatik doldurur)
+    ssl_certificate     /etc/letsencrypt/live/siteniz.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/siteniz.com/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+
+    # Güvenlik başlıkları
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "strict-origin-when-cross-origin";
+
+    # Gzip sıkıştırma
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;
+
+    # Tüm istekleri Node.js API'ye ilet (API hem frontend hem de /api sunar)
+    location / {
+        proxy_pass         http://127.0.0.1:5174;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection 'upgrade';
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+
+        # Büyük dosya yüklemeleri için
+        client_max_body_size 10M;
+    }
+
+    # Statik asset'ler için uzun cache (Vite hash'li dosyalar)
+    location /assets/ {
+        proxy_pass http://127.0.0.1:5174;
+        expires    1y;
+        add_header Cache-Control "public, immutable";
+    }
+}

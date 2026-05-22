@@ -12,17 +12,20 @@ export function AdminLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const from = typeof location.state?.from === "string" ? location.state.from : "/admin";
 
   if (isAdminAuthenticated) {
     return <Navigate replace to="/admin" />;
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    const isValid = adminLogin(username, password);
+    const isValid = await adminLogin(username, password);
+    setIsLoading(false);
 
     if (!isValid) {
       setError("Kullanıcı adı veya şifre hatalı.");
@@ -72,16 +75,11 @@ export function AdminLoginPage() {
             </div>
           ) : null}
 
-          <Button className="w-full" type="submit">
+          <Button className="w-full" type="submit" disabled={isLoading}>
             <LockKeyhole size={18} />
-            Admin paneline gir
+            {isLoading ? "Giriş yapılıyor..." : "Admin paneline gir"}
           </Button>
         </form>
-
-        <div className="mt-5 rounded-lg bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
-          Geçici mock giriş: <span className="text-slate-950">admin</span> /{" "}
-          <span className="text-slate-950">Fbs1997*</span>
-        </div>
       </Card>
     </main>
   );

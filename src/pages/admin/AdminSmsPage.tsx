@@ -2,43 +2,9 @@ import { useEffect, useState } from "react";
 import { BellRing, Plus, Save, Send, Trash2 } from "lucide-react";
 import { Button, Card, Field, Input, Textarea } from "../../components/ui";
 import { usePortalStore } from "../../hooks/usePortalStore";
+import { serviceApi } from "../../lib/api";
+import type { SmsTemplate } from "../../lib/api";
 import type { Customer } from "../../types";
-
-interface SmsTemplate {
-  id: string;
-  title: string;
-  message: string;
-}
-
-const smsTemplateStorageKey = "fbs-sms-templates";
-
-const defaultTemplates: SmsTemplate[] = [
-  {
-    id: "template-received",
-    title: "Servis kaydı alındı",
-    message:
-      "FBS Teknik Servis: Servis kaydınız alınmıştır. Ekibimiz süreçle ilgili sizi bilgilendirecektir.",
-  },
-  {
-    id: "template-ready",
-    title: "Teslime hazır",
-    message:
-      "FBS Teknik Servis: Ürününüz teslime hazırdır. Detaylı bilgi için bizimle iletişime geçebilirsiniz.",
-  },
-];
-
-const loadSavedTemplates = () => {
-  if (typeof window === "undefined") {
-    return defaultTemplates;
-  }
-
-  try {
-    const savedTemplates = window.localStorage.getItem(smsTemplateStorageKey);
-    return savedTemplates ? JSON.parse(savedTemplates) as SmsTemplate[] : defaultTemplates;
-  } catch {
-    return defaultTemplates;
-  }
-};
 
 const getCustomerLabel = (customer: Customer) =>
   `${customer.name || "İsimsiz müşteri"}${customer.phone ? ` - ${customer.phone}` : ""}`;
@@ -49,18 +15,17 @@ export function AdminSmsPage() {
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
-  const [templates, setTemplates] = useState<SmsTemplate[]>(loadSavedTemplates);
+  const [templates, setTemplates] = useState<SmsTemplate[]>([]);
   const [templateTitle, setTemplateTitle] = useState("");
   const [templateMessage, setTemplateMessage] = useState("");
-  const [sendStatus, setSendStatus] = useState("");
+  const [sendStatus, setSendStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [isAddingTemplate, setIsAddingTemplate] = useState(false);
 
   useEffect(() => {
     void loadCustomers();
+    serviceApi.listSmsTemplates().then(setTemplates).catch(() => undefined);
   }, [loadCustomers]);
-
-  useEffect(() => {
-    window.localStorage.setItem(smsTemplateStorageKey, JSON.stringify(templates));
-  }, [templates]);
 
   const selectCustomer = (customerId: string) => {
     setSelectedCustomerId(customerId);
@@ -71,7 +36,7 @@ export function AdminSmsPage() {
     }
   };
 
-  const addTemplate = () => {
+  const addTemplate = async () => {
     const title = templateTitle.trim();
     const nextMessage = templateMessage.trim();
 
@@ -79,28 +44,52 @@ export function AdminSmsPage() {
       return;
     }
 
-    setTemplates((current) => [
-      {
-        id: `template-${Date.now()}`,
-        title,
-        message: nextMessage,
-      },
-      ...current,
-    ]);
-    setTemplateTitle("");
-    setTemplateMessage("");
+    setIsAddingTemplate(true);
+
+    try {
+      const created = await serviceApi.createSmsTemplate({ title, message: nextMessage });
+      setTemplates((current) => [created, ...current]);
+      setTemplateTitle("");
+      setTemplateMessage("");
+    } catch {
+      // silently ignore; backend unavailable
+    } finally {
+      setIsAddingTemplate(false);
+    }
   };
 
-  const removeTemplate = (templateId: string) => {
-    setTemplates((current) => current.filter((template) => template.id !== templateId));
+  const removeTemplate = async (templateId: string) => {
+    setTemplates((current) => current.filter((t) => t.id !== templateId));
+
+    try {
+      await serviceApi.deleteSmsTemplate(templateId);
+    } catch {
+      // rollback
+      serviceApi.listSmsTemplates().then(setTemplates).catch(() => undefined);
+    }
   };
 
-  const sendSms = () => {
+  const sendSms = async () => {
     if (!phone.trim() || !message.trim()) {
       return;
     }
 
-    setSendStatus("SMS gönderimi mock olarak oluşturuldu.");
+    setIsSending(true);
+    setSendStatus(null);
+
+    try {
+      await serviceApi.sendSms({
+        phone: phone.trim(),
+        message: message.trim(),
+        customerId: selectedCustomerId || undefined,
+      });
+      setSendStatus({ ok: true, text: "SMS başarıyla gönderildi." });
+      setMessage("");
+    } catch {
+      setSendStatus({ ok: false, text: "SMS gönderilemedi. NetGSM bağlantısını kontrol edin." });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -153,14 +142,14 @@ export function AdminSmsPage() {
               />
             </Field>
 
-            <Button type="button" disabled={!phone.trim() || !message.trim()} onClick={sendSms}>
+            <Button type="button" disabled={!phone.trim() || !message.trim() || isSending} onClick={() => void sendSms()}>
               <Send size={18} />
-              SMS gönder
+              {isSending ? "Gönderiliyor..." : "SMS gönder"}
             </Button>
 
             {sendStatus ? (
-              <p className="rounded-lg bg-emerald-50 p-3 text-sm font-bold text-emerald-700">
-                {sendStatus}
+              <p className={`rounded-lg p-3 text-sm font-bold ${sendStatus.ok ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                {sendStatus.text}
               </p>
             ) : null}
           </Card>
@@ -192,11 +181,11 @@ export function AdminSmsPage() {
             <Button
               type="button"
               variant="secondary"
-              disabled={!templateTitle.trim() || !templateMessage.trim()}
-              onClick={addTemplate}
+              disabled={!templateTitle.trim() || !templateMessage.trim() || isAddingTemplate}
+              onClick={() => void addTemplate()}
             >
               <Save size={18} />
-              Hazır SMS kaydet
+              {isAddingTemplate ? "Kaydediliyor..." : "Hazır SMS kaydet"}
             </Button>
           </Card>
         </div>
@@ -206,10 +195,10 @@ export function AdminSmsPage() {
             <div className="grid h-12 w-12 place-items-center rounded-lg bg-brand-50 text-brand-700">
               <BellRing size={24} />
             </div>
-            <h2 className="mt-4 text-xl font-black text-slate-950">Mock SMS paneli</h2>
+            <h2 className="mt-4 text-xl font-black text-slate-950">NetGSM SMS paneli</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Backend bağlı olmadığından gönderim simüle edilir. Hazır SMS ve müşteri seçimi gerçek
-              entegrasyona hazır şekilde ayrıştırılmıştır.
+              Müşteri seçip mesaj yazarak direkt NetGSM üzerinden SMS gönderebilirsiniz. Tüm gönderimler
+              SMS Kayıtları'nda loglanır.
             </p>
           </Card>
 
@@ -250,7 +239,7 @@ export function AdminSmsPage() {
                     className="min-h-10 px-3 py-2"
                     type="button"
                     variant="ghost"
-                    onClick={() => removeTemplate(template.id)}
+                    onClick={() => void removeTemplate(template.id)}
                   >
                     <Trash2 size={16} />
                     Sil
@@ -270,3 +259,4 @@ export function AdminSmsPage() {
     </div>
   );
 }
+

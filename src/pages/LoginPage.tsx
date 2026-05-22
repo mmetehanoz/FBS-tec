@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck, Smartphone, UserPlus } from "lucide-react";
 import { Button, Card, Field, Input } from "../components/ui";
 import { usePortalStore } from "../hooks/usePortalStore";
+import { serviceApi } from "../lib/api";
 import { formatTurkishMobileInput, isValidTurkishMobile, normalizePhone, phonePrefix } from "../utils/phone";
 
 type AuthMode = "login" | "register";
@@ -15,6 +16,9 @@ export function LoginPage() {
   const [phone, setPhone] = useState(phonePrefix);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const login = usePortalStore((state) => state.login);
   const registerCustomer = usePortalStore((state) => state.registerCustomer);
   const navigate = useNavigate();
@@ -30,16 +34,51 @@ export function LoginPage() {
     setMode(nextMode);
     setStep("details");
     setOtp("");
+    setOtpError("");
   };
 
-  const verify = () => {
-    const normalizedPhone = normalizePhone(phone);
-    if (isRegister) {
-      registerCustomer({ name, phone: normalizedPhone, email: email.trim() });
-    } else {
-      login({ phone: normalizedPhone });
+  const sendOtp = async () => {
+    setIsSending(true);
+    setOtpError("");
+
+    try {
+      await serviceApi.otpSend(normalizePhone(phone));
+      setStep("otp");
+    } catch {
+      setOtpError("SMS gönderilemedi. Lütfen tekrar deneyin.");
+    } finally {
+      setIsSending(false);
     }
-    navigate(from, { replace: true });
+  };
+
+  const verify = async () => {
+    const normalizedPhone = normalizePhone(phone);
+
+    if (isRegister) {
+      // Kayıt modunda OTP mock olarak kabul edilir; müşteri oluştur ve giriş yap
+      registerCustomer({ name, phone: normalizedPhone, email: email.trim() });
+      navigate(from, { replace: true });
+      return;
+    }
+
+    // Giriş modunda gerçek OTP doğrulaması
+    setIsVerifying(true);
+    setOtpError("");
+
+    try {
+      const result = await serviceApi.otpVerify(normalizedPhone, otp);
+
+      if (result.ok) {
+        login({ phone: normalizedPhone });
+        navigate(from, { replace: true });
+      } else {
+        setOtpError("Kod hatalı veya süresi dolmuş. Tekrar deneyin.");
+      }
+    } catch {
+      setOtpError("Doğrulama başarısız. Kod hatalı veya süresi dolmuş olabilir.");
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   return (
@@ -61,8 +100,8 @@ export function LoginPage() {
           {isRegister ? "FBS müşteri üyeliği" : "Üye girişi"}
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Servis takip, mesajlar ve hesap alanı için müşteri girişi gerekir. Doğrulama mock SMS
-          kodu ile simüle edilir.
+          Servis takip, mesajlar ve hesap alanı için müşteri girişi gerekir.
+          {isRegister ? " Üyelik oluşturmak için bilgilerinizi doldurun." : " Telefon numaranıza SMS doğrulama kodu gönderilecek."}
         </p>
 
         <div className="mt-5 grid grid-cols-2 rounded-lg bg-slate-100 p-1">
@@ -122,15 +161,18 @@ export function LoginPage() {
                   />
                 </Field>
               ) : null}
-              <Button className="w-full" disabled={!canContinue} onClick={() => setStep("otp")}>
-                SMS kodu gönder
+              <Button className="w-full" disabled={!canContinue || isSending} onClick={() => void sendOtp()}>
+                {isSending ? "Gönderiliyor..." : "SMS kodu gönder"}
               </Button>
+              {otpError ? (
+                <p className="rounded-lg bg-rose-50 p-3 text-sm font-bold text-rose-700">{otpError}</p>
+              ) : null}
             </>
           ) : (
             <>
               <div className="rounded-lg bg-brand-50 p-4 text-sm leading-6 text-brand-800">
-                SMS kodu <strong>{phone}</strong> numarasına gönderildi. Mock doğrulama için
-                istediğiniz 4-6 haneli kodu girebilirsiniz.
+                SMS kodu <strong>{phone}</strong> numarasına gönderildi.
+                {isRegister ? " Doğrulama kodu simüle edilir; istediğiniz kodu girebilirsiniz." : " 5 dakika içinde geçersiz olur."}
               </div>
               <Field label="SMS doğrulama kodu">
                 <Input
@@ -141,8 +183,11 @@ export function LoginPage() {
                   onChange={(event) => setOtp(event.target.value)}
                 />
               </Field>
-              <Button className="w-full" disabled={otp.length < 4} onClick={verify}>
-                {isRegister ? "Üyeliği oluştur ve giriş yap" : "Giriş yap"}
+              {otpError ? (
+                <p className="rounded-lg bg-rose-50 p-3 text-sm font-bold text-rose-700">{otpError}</p>
+              ) : null}
+              <Button className="w-full" disabled={(otp.length < 6 && !isRegister) || isVerifying} onClick={() => void verify()}>
+                {isVerifying ? "Doğrulanıyor..." : isRegister ? "Üyeliği oluştur ve giriş yap" : "Giriş yap"}
               </Button>
               <Button className="w-full" variant="ghost" onClick={() => setStep("details")}>
                 Bilgileri düzenle

@@ -3,8 +3,12 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { sendSingleSms, sendOtpSms, generateOtpCode, STATUS_SMS_TEMPLATES } from "./netgsm.mjs";
 
 const prisma = new PrismaClient();
 const app = express();
@@ -206,6 +210,24 @@ function asyncRoute(handler) {
   };
 }
 
+function requireAdmin(request, response, next) {
+  const auth = request.headers["authorization"] ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+
+  if (!token) {
+    response.status(401).json({ error: "Kimlik doğrulama gerekli" });
+    return;
+  }
+
+  try {
+    const payload = jwt.verify(token, jwtSecret);
+    request.admin = payload;
+    next();
+  } catch {
+    response.status(401).json({ error: "Geçersiz veya süresi dolmuş token" });
+  }
+}
+
 app.get("/api/health", (_request, response) => {
   response.json({ ok: true, service: "fbs-postgres-api" });
 });
@@ -251,7 +273,7 @@ app.post("/api/auth/admin/login", asyncRoute(async (request, response) => {
   });
 }));
 
-app.get("/api/customers", asyncRoute(async (_request, response) => {
+app.get("/api/customers", requireAdmin, asyncRoute(async (_request, response) => {
   const customers = await prisma.customer.findMany({
     orderBy: {
       createdAt: "desc",
@@ -260,7 +282,7 @@ app.get("/api/customers", asyncRoute(async (_request, response) => {
   response.json(customers.map(toCustomer));
 }));
 
-app.post("/api/customers", asyncRoute(async (request, response) => {
+app.post("/api/customers", requireAdmin, asyncRoute(async (request, response) => {
   const payload = customerSchema.parse({
     ...request.body,
     phone: normalizePhone(request.body.phone),
@@ -275,7 +297,7 @@ app.post("/api/customers", asyncRoute(async (request, response) => {
   response.status(201).json(toCustomer(customer));
 }));
 
-app.get("/api/customers/:id", asyncRoute(async (request, response) => {
+app.get("/api/customers/:id", requireAdmin, asyncRoute(async (request, response) => {
   const customer = await prisma.customer.findUnique({
     where: {
       id: request.params.id,
@@ -290,7 +312,7 @@ app.get("/api/customers/:id", asyncRoute(async (request, response) => {
   response.json(toCustomer(customer));
 }));
 
-app.patch("/api/customers/:id", asyncRoute(async (request, response) => {
+app.patch("/api/customers/:id", requireAdmin, asyncRoute(async (request, response) => {
   const payload = customerSchema.partial().parse({
     ...request.body,
     phone: request.body.phone ? normalizePhone(request.body.phone) : undefined,
@@ -315,7 +337,7 @@ app.patch("/api/customers/:id", asyncRoute(async (request, response) => {
   response.json(toCustomer(customer));
 }));
 
-app.delete("/api/customers/:id", asyncRoute(async (request, response) => {
+app.delete("/api/customers/:id", requireAdmin, asyncRoute(async (request, response) => {
   await prisma.customer.delete({
     where: {
       id: request.params.id,
@@ -402,22 +424,71 @@ app.get("/api/services/:id", asyncRoute(async (request, response) => {
   response.json(toService(service));
 }));
 
-app.patch("/api/services/:id", asyncRoute(async (request, response) => {
-  const service = await prisma.serviceRequest.update({
-    where: {
-      id: request.params.id,
-    },
-    data: request.body,
+app.patch("/api/services/:id", requireAdmin, asyncRoute(async (request, response) => {
+  const payload = serviceSchema.partial().parse(request.body);
+  const prevService = await prisma.serviceRequest.findUnique({
+    where: { id: request.params.id },
+    select: { currentStatus: true, trackingNo: true, contactPhone: true },
   });
 
-  if (request.body.contactName || request.body.contactPhone || request.body.contactEmail || request.body.address) {
+  if (!prevService) {
+    response.status(404).json({ error: "Servis kaydı bulunamadı" });
+    return;
+  }
+
+  const service = await prisma.serviceRequest.update({
+    where: { id: request.params.id },
+    data: payload,
+  });
+
+  if (payload.contactName || payload.contactPhone || payload.contactEmail || payload.address) {
     await upsertCustomerFromService(toService(service));
+  }
+
+  // Auto-SMS on specific status changes
+  const smsTriggerStatuses = ["Talep Alındı", "Fiyat Onayı Bekleniyor", "Teslime Hazır"];
+  const statusChanged = payload.currentStatus && payload.currentStatus !== prevService.currentStatus;
+
+  if (statusChanged && smsTriggerStatuses.includes(payload.currentStatus)) {
+    const phone = service.contactPhone || prevService.contactPhone;
+    const templateFn = STATUS_SMS_TEMPLATES[payload.currentStatus];
+
+    if (phone && templateFn) {
+      const message = templateFn(service.trackingNo);
+
+      try {
+        const result = await sendSingleSms(phone, message);
+        await prisma.smsLog.create({
+          data: {
+            customerId: service.customerId,
+            serviceRequestId: service.id,
+            phone: normalizePhone(phone),
+            message,
+            status: result.success ? "sent" : "failed",
+            providerResponse: result,
+          },
+        });
+      } catch (smsError) {
+        // SMS failure must not block the status update response
+        console.error("Otomatik SMS gönderilemedi:", smsError?.message);
+        await prisma.smsLog.create({
+          data: {
+            customerId: service.customerId,
+            serviceRequestId: service.id,
+            phone: normalizePhone(phone),
+            message,
+            status: "error",
+            providerResponse: { error: smsError?.message },
+          },
+        });
+      }
+    }
   }
 
   response.json(toService(service));
 }));
 
-app.delete("/api/services/:id", asyncRoute(async (request, response) => {
+app.delete("/api/services/:id", requireAdmin, asyncRoute(async (request, response) => {
   await prisma.serviceRequest.delete({
     where: {
       id: request.params.id,
@@ -426,7 +497,7 @@ app.delete("/api/services/:id", asyncRoute(async (request, response) => {
   response.status(204).end();
 }));
 
-app.get("/api/services/:id/messages", asyncRoute(async (request, response) => {
+app.get("/api/services/:id/messages", requireAdmin, asyncRoute(async (request, response) => {
   const service = await prisma.serviceRequest.findUnique({
     where: {
       id: request.params.id,
@@ -444,7 +515,7 @@ app.get("/api/services/:id/messages", asyncRoute(async (request, response) => {
   response.json(service.messages);
 }));
 
-app.post("/api/services/:id/messages", asyncRoute(async (request, response) => {
+app.post("/api/services/:id/messages", requireAdmin, asyncRoute(async (request, response) => {
   const messages = z.array(z.unknown()).parse(request.body.messages);
   const service = await prisma.serviceRequest.update({
     where: {
@@ -457,7 +528,7 @@ app.post("/api/services/:id/messages", asyncRoute(async (request, response) => {
   response.status(201).json(toService(service));
 }));
 
-app.get("/api/sms/templates", asyncRoute(async (_request, response) => {
+app.get("/api/sms/templates", requireAdmin, asyncRoute(async (_request, response) => {
   const templates = await prisma.smsTemplate.findMany({
     orderBy: {
       createdAt: "desc",
@@ -466,7 +537,7 @@ app.get("/api/sms/templates", asyncRoute(async (_request, response) => {
   response.json(templates);
 }));
 
-app.post("/api/sms/templates", asyncRoute(async (request, response) => {
+app.post("/api/sms/templates", requireAdmin, asyncRoute(async (request, response) => {
   const payload = smsTemplateSchema.parse(request.body);
   const template = await prisma.smsTemplate.create({
     data: payload,
@@ -474,7 +545,7 @@ app.post("/api/sms/templates", asyncRoute(async (request, response) => {
   response.status(201).json(template);
 }));
 
-app.patch("/api/sms/templates/:id", asyncRoute(async (request, response) => {
+app.patch("/api/sms/templates/:id", requireAdmin, asyncRoute(async (request, response) => {
   const payload = smsTemplateSchema.partial().parse(request.body);
   const template = await prisma.smsTemplate.update({
     where: {
@@ -485,7 +556,7 @@ app.patch("/api/sms/templates/:id", asyncRoute(async (request, response) => {
   response.json(template);
 }));
 
-app.delete("/api/sms/templates/:id", asyncRoute(async (request, response) => {
+app.delete("/api/sms/templates/:id", requireAdmin, asyncRoute(async (request, response) => {
   await prisma.smsTemplate.delete({
     where: {
       id: request.params.id,
@@ -494,24 +565,41 @@ app.delete("/api/sms/templates/:id", asyncRoute(async (request, response) => {
   response.status(204).end();
 }));
 
-app.post("/api/sms/send", asyncRoute(async (request, response) => {
+app.post("/api/sms/send", requireAdmin, asyncRoute(async (request, response) => {
   const payload = smsSendSchema.parse(request.body);
+  const phone = normalizePhone(payload.phone);
+
+  let smsResult;
+  let status;
+
+  try {
+    smsResult = await sendSingleSms(phone, payload.message);
+    status = smsResult.success ? "sent" : "failed";
+  } catch (smsError) {
+    smsResult = { error: smsError?.message };
+    status = "error";
+  }
+
   const log = await prisma.smsLog.create({
     data: {
-      customerId: payload.customerId,
-      serviceRequestId: payload.serviceRequestId,
-      phone: normalizePhone(payload.phone),
+      customerId: payload.customerId ?? null,
+      serviceRequestId: payload.serviceRequestId ?? null,
+      phone,
       message: payload.message,
-      providerResponse: {
-        mock: true,
-        sentAt: new Date().toISOString(),
-      },
+      status,
+      providerResponse: smsResult,
     },
   });
+
+  if (status === "error") {
+    response.status(502).json({ error: "SMS gönderilemedi", log });
+    return;
+  }
+
   response.status(201).json(log);
 }));
 
-app.get("/api/sms/logs", asyncRoute(async (_request, response) => {
+app.get("/api/sms/logs", requireAdmin, asyncRoute(async (_request, response) => {
   const logs = await prisma.smsLog.findMany({
     orderBy: {
       createdAt: "desc",
@@ -520,7 +608,91 @@ app.get("/api/sms/logs", asyncRoute(async (_request, response) => {
   response.json(logs);
 }));
 
-app.get("/api/admin/dashboard/stats", asyncRoute(async (_request, response) => {
+// ── OTP: gönder ─────────────────────────────────────────────────────────────
+app.post("/api/otp/send", asyncRoute(async (request, response) => {
+  const { phone } = z.object({ phone: z.string().min(10) }).parse(request.body);
+  const normalizedPhone = normalizePhone(phone);
+
+  // Süresi dolmamış bekleyen OTP sayısını kontrol et (brute-force koruması)
+  const recentCount = await prisma.otpCode.count({
+    where: {
+      phone: normalizedPhone,
+      used: false,
+      expiresAt: { gt: new Date() },
+    },
+  });
+
+  if (recentCount >= 3) {
+    response.status(429).json({ error: "Çok fazla OTP isteği. Lütfen bekleyin." });
+    return;
+  }
+
+  // Önceki kullanılmamış kodları geçersiz kıl
+  await prisma.otpCode.updateMany({
+    where: { phone: normalizedPhone, used: false },
+    data: { used: true },
+  });
+
+  const code = generateOtpCode();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 dakika
+
+  await prisma.otpCode.create({
+    data: { phone: normalizedPhone, code, expiresAt },
+  });
+
+  const msg = `FBS Servis: Dogrulama kodunuz: ${code} (5 dakika gecerlidir)`;
+
+  try {
+    await sendOtpSms(normalizedPhone, msg);
+  } catch (smsError) {
+    console.error("OTP SMS gönderilemedi:", smsError?.message);
+    // OTP kodu oluşturuldu; SMS altyapı hatası olsa bile devam etme, hata dön
+    response.status(502).json({ error: "OTP SMS gönderilemedi. Lütfen tekrar deneyin." });
+    return;
+  }
+
+  response.json({ ok: true });
+}));
+
+// ── OTP: doğrula ─────────────────────────────────────────────────────────────
+app.post("/api/otp/verify", asyncRoute(async (request, response) => {
+  const { phone, code } = z.object({
+    phone: z.string().min(10),
+    code: z.string().length(6),
+  }).parse(request.body);
+
+  const normalizedPhone = normalizePhone(phone);
+
+  const otpRecord = await prisma.otpCode.findFirst({
+    where: {
+      phone: normalizedPhone,
+      code,
+      used: false,
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!otpRecord) {
+    response.status(400).json({ error: "Kod hatalı veya süresi dolmuş." });
+    return;
+  }
+
+  await prisma.otpCode.update({
+    where: { id: otpRecord.id },
+    data: { used: true },
+  });
+
+  // Telefon numarasıyla eşleşen servis kayıtlarını döndür
+  const services = await prisma.serviceRequest.findMany({
+    where: { contactPhone: normalizedPhone },
+    orderBy: { createdAt: "desc" },
+  });
+
+  response.json({ ok: true, services: services.map(toService) });
+}));
+
+app.get("/api/admin/dashboard/stats", requireAdmin, asyncRoute(async (_request, response) => {
   const [newRequests, activeServices, pendingOffers, readyServices, todayActivities] = await Promise.all([
     prisma.serviceRequest.count({ where: { currentStatus: "Talep Alındı" } }),
     prisma.serviceRequest.count({ where: { currentStatus: { notIn: ["Teslim Edildi"] } } }),
@@ -567,6 +739,19 @@ app.use((error, _request, response, next) => {
   console.error(error);
   response.status(500).json({ error: "Sunucu hatası" });
 });
+
+// ── Production: React uygulamasını serve et ──────────────────────────────────
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const distPath = path.join(__dirname, "..", "dist");
+
+if (process.env.NODE_ENV === "production" && existsSync(distPath)) {
+  app.use(express.static(distPath));
+
+  // SPA fallback: tüm bilinmeyen rotaları index.html'e yönlendir
+  app.get("*", (_request, response) => {
+    response.sendFile(path.join(distPath, "index.html"));
+  });
+}
 
 app.listen(port, () => {
   console.log(`FBS PostgreSQL API running at http://localhost:${port}`);

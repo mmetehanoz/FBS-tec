@@ -1,11 +1,10 @@
 import { create } from "zustand";
 import { customers, serviceRecords } from "../data/mockData";
-import { serviceApi } from "../lib/api";
+import { serviceApi, setAdminToken, clearAdminToken, getAdminToken } from "../lib/api";
 import type { Customer, Message, ServiceRecord } from "../types";
 
-const adminSessionKey = "fbs-admin-session";
 const isAdminSessionActive = () =>
-  typeof window !== "undefined" && window.localStorage.getItem(adminSessionKey) === "active";
+  typeof window !== "undefined" && getAdminToken() !== null;
 
 const defaultCustomer: Customer = {
   id: "guest",
@@ -24,7 +23,7 @@ interface PortalState {
   serviceApiStatus: "idle" | "loading" | "ready" | "error";
   login: (customerUpdates?: Partial<Customer>) => void;
   logout: () => void;
-  adminLogin: (username: string, password: string) => boolean;
+  adminLogin: (username: string, password: string) => Promise<boolean>;
   adminLogout: () => void;
   registerCustomer: (customer: Pick<Customer, "name" | "phone" | "email">) => void;
   loadCustomers: () => Promise<void>;
@@ -50,18 +49,18 @@ export const usePortalStore = create<PortalState>((set) => ({
       customer: customerUpdates ? { ...state.customer, ...customerUpdates } : state.customer,
     })),
   logout: () => set({ isAuthenticated: false }),
-  adminLogin: (username, password) => {
-    const isValid = username.trim() === "admin" && password === "Fbs1997*";
-
-    if (isValid) {
-      window.localStorage.setItem(adminSessionKey, "active");
+  adminLogin: async (username, password) => {
+    try {
+      const { token } = await serviceApi.adminLogin(username, password);
+      setAdminToken(token);
       set({ isAdminAuthenticated: true });
+      return true;
+    } catch {
+      return false;
     }
-
-    return isValid;
   },
   adminLogout: () => {
-    window.localStorage.removeItem(adminSessionKey);
+    clearAdminToken();
     set({ isAdminAuthenticated: false });
   },
   registerCustomer: (customer) =>

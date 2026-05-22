@@ -89,11 +89,23 @@ model SmsLog {
   serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
   phone            String
   message          String
-  status           String          @default("mock_sent")
+  status           String          @default("sent")
   providerResponse Json?           @map("provider_response")
   createdAt        DateTime        @default(now()) @map("created_at")
 
   @@index([customerId])
   @@index([serviceRequestId])
   @@map("sms_logs")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([phone])
+  @@map("otp_codes")
 }
