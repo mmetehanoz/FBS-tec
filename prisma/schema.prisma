@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  name         String   @default("FBS Admin")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+model Customer {
+  id        String           @id @default(cuid())
+  name      String
+  phone     String           @unique
+  email     String           @default("")
+  addresses String[]         @default([])
+  services  ServiceRequest[]
+  smsLogs   SmsLog[]
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model ServiceRequest {
+  id                String    @id @default(cuid())
+  trackingNo        String    @unique @map("tracking_no")
+  customerId        String    @map("customer_id")
+  customer          Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  contactName       String    @default("") @map("contact_name")
+  contactPhone      String    @default("") @map("contact_phone")
+  contactEmail      String    @default("") @map("contact_email")
+  productCategory   String    @default("") @map("product_category")
+  brand             String    @default("")
+  model             String    @default("")
+  serialNo          String    @default("") @map("serial_no")
+  warranty          String    @default("")
+  issueTitle        String    @default("") @map("issue_title")
+  description       String    @default("")
+  urgency           String    @default("Normal")
+  preference        String    @default("Kendim servise bırakacağım")
+  address           String    @default("")
+  appointment       String    @default("")
+  currentStatus     String    @default("Talep Alındı") @map("current_status")
+  estimatedDelivery String    @default("") @map("estimated_delivery")
+  technician        String    @default("")
+  visibleNotes      Json      @default("[]") @map("visible_notes")
+  internalNotes     Json      @default("[]") @map("internal_notes")
+  photos            Json      @default("[]")
+  priceOffer        Json?     @map("price_offer")
+  timeline          Json      @default("[]")
+  messages          Json      @default("[]")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  smsLogs           SmsLog[]
+
+  @@index([customerId])
+  @@index([contactPhone])
+  @@index([currentStatus])
+  @@map("service_requests")
+}
+
+model SmsTemplate {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("sms_templates")
+}
+
+model SmsLog {
+  id               String          @id @default(cuid())
+  customerId       String?         @map("customer_id")
+  customer         Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  serviceRequestId String?         @map("service_request_id")
+  serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+  phone            String
+  message          String
+  status           String          @default("mock_sent")
+  providerResponse Json?           @map("provider_response")
+  createdAt        DateTime        @default(now()) @map("created_at")
+
+  @@index([customerId])
+  @@index([serviceRequestId])
+  @@map("sms_logs")
+}

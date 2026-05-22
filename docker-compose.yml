@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fbs-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: fbs_tec
+      POSTGRES_USER: fbs
+      POSTGRES_PASSWORD: fbs_password
+    volumes:
+      - fbs_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  fbs_postgres_data:
