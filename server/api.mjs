@@ -748,7 +748,7 @@ if (process.env.NODE_ENV === "production" && existsSync(distPath)) {
   app.use(express.static(distPath));
 
   // SPA fallback: tüm bilinmeyen rotaları index.html'e yönlendir
-  app.get("*", (_request, response) => {
+  app.get("/{*path}", (_request, response) => {
     response.sendFile(path.join(distPath, "index.html"));
   });
 }

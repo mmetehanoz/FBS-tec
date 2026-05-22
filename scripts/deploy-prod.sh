@@ -136,10 +136,9 @@ if pm2 describe "$PM2_APP_NAME" >/dev/null 2>&1; then
   warn "PM2'de '$PM2_APP_NAME' zaten mevcut. Yeniden başlatılıyor..."
   pm2 restart "$PM2_APP_NAME"
 else
-  pm2 start server/api.mjs \
+  NODE_ENV=production pm2 start server/api.mjs \
     --name "$PM2_APP_NAME" \
     --interpreter node \
-    --env production \
     --time \
     --max-memory-restart 500M
 fi
