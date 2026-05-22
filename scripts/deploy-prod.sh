@@ -86,7 +86,7 @@ log ".env yüklendi ve doğrulandı."
 
 # ─── npm bağımlılıkları ───────────────────────────────────────────────────────
 section "Bağımlılıklar"
-npm ci --omit=dev 2>/dev/null || npm install
+npm ci 2>/dev/null || npm install
 log "npm paketleri yüklendi."
 
 # ─── Frontend build ───────────────────────────────────────────────────────────
